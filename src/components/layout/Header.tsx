@@ -45,8 +45,8 @@ export const Header: React.FC = () => {
         <div className="flex items-center h-14 gap-4">
           {/* Logo */}
           <Link to="/" className="flex items-center group">
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold text-white tracking-tight leading-none group-hover:text-primary-400 transition-colors" style={{ fontFamily: 'Deca Serif, serif' }}>BARSENSE</span>
+            <div className="flex flex-col items-center">
+              <span className="text-[1.6rem] font-bold text-white tracking-tight leading-none group-hover:text-primary-400 transition-colors" style={{ fontFamily: 'Deca Serif, serif' }}>BARSENSE</span>
               <span className="text-[10px] text-gray-400 tracking-widest uppercase font-medium">Luxury Perfumes</span>
             </div>
           </Link>
