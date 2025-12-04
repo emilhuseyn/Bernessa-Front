@@ -1,0 +1,332 @@
+import api from './api';
+import type { Product } from '../types';
+
+export interface CreateProductDTO {
+  name: string;
+  brand: string;
+  price: number;
+  originalPrice?: number | null;
+  volume: string;
+  type: string;
+  description: string;
+  categoryId: number;
+  stock: number;
+  isActive?: boolean;
+  isFeatured?: boolean;
+  images?: File[];
+}
+
+export interface UpdateProductDTO extends Partial<CreateProductDTO> {
+  images?: File[];
+}
+
+export interface ProductFilterParams {
+  categoryId?: number;
+  brand?: string;
+  type?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  search?: string;
+  sortBy?: 'price-asc' | 'price-desc' | 'newest' | 'name';
+  page?: number;
+  pageSize?: number;
+  includeInactive?: boolean;
+}
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5034/api';
+const MEDIA_BASE_URL = API_BASE_URL.replace(/\/?api\/?$/, '');
+const FALLBACK_IMAGE = 'https://via.placeholder.com/600x800?text=M%C9%99hsul';
+const PRODUCT_ENDPOINT_CANDIDATES = ['/productses', '/Productses', '/products', '/Products'];
+
+const sanitizeRelativePath = (value: string): string => {
+  return value
+    .replace(/\\/g, '/')
+    .replace(/\/{2,}/g, '/')
+    .replace(/^\/+/, '');
+};
+
+const extractMediaPath = (value: unknown): string | null => {
+  if (!value) return null;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    const candidate = record.url ?? record.imageUrl ?? record.path ?? record.filePath ?? record.src;
+    return typeof candidate === 'string' ? candidate : null;
+  }
+  return null;
+};
+
+const resolveMediaUrl = (path: string): string => {
+  if (!path) return FALLBACK_IMAGE;
+  if (/^https?:\/\//i.test(path)) return path;
+  const normalized = sanitizeRelativePath(path);
+  if (!normalized) {
+    return FALLBACK_IMAGE;
+  }
+  return `${MEDIA_BASE_URL}/${normalized}`;
+};
+
+const coalesceValue = <T>(...values: Array<T | null | undefined>): T | undefined => {
+  for (const value of values) {
+    if (value !== null && value !== undefined) {
+      return value;
+    }
+  }
+  return undefined;
+};
+
+const normalizeProduct = (raw: any): Product => {
+  if (!raw) {
+    return {
+      id: '',
+      name: '',
+      description: '',
+      price: 0,
+      images: [FALLBACK_IMAGE],
+      category: '',
+      inStock: false,
+    };
+  }
+
+  const id = raw.id != null ? String(raw.id) : String(raw.slug ?? raw.name ?? Date.now());
+  const rawImages: string[] = [];
+
+  if (Array.isArray(raw.images)) {
+    raw.images.forEach((item: unknown) => {
+      const path = extractMediaPath(item);
+      if (path) {
+        rawImages.push(path);
+      }
+    });
+  }
+
+  if (!rawImages.length && Array.isArray(raw.imageUrls)) {
+    raw.imageUrls.forEach((item: unknown) => {
+      const path = extractMediaPath(item);
+      if (path) {
+        rawImages.push(path);
+      }
+    });
+  }
+
+  if (!rawImages.length) {
+    const singleImage = extractMediaPath(raw.image) || extractMediaPath(raw.primaryImage);
+    if (singleImage) {
+      rawImages.push(singleImage);
+    }
+  }
+
+  const resolvedImages = rawImages.length
+    ? rawImages.map((img) => resolveMediaUrl(img))
+    : [FALLBACK_IMAGE];
+  const stockValue = raw.stock != null ? Number(raw.stock) : undefined;
+  const originalPriceValue = raw.originalPrice != null ? Number(raw.originalPrice) : undefined;
+  const rawCategoryId = coalesceValue(
+    raw.categoryId,
+    raw.CategoryId,
+    raw.categoryID,
+    raw.CategoryID,
+    raw.category_id,
+    raw.category?.id,
+    raw.Category?.Id,
+    raw.Category?.ID,
+    raw.Category?.id
+  );
+  const categoryName = coalesceValue(
+    raw.categoryName,
+    raw.category,
+    raw.CategoryName,
+    raw.Category?.name,
+    raw.category?.name
+  );
+
+  return {
+    id,
+    name: raw.name ?? '',
+    description: raw.description ?? '',
+    price: raw.price != null ? Number(raw.price) : 0,
+    originalPrice: originalPriceValue,
+    images: resolvedImages,
+    imageUrls: Array.isArray(raw.imageUrls)
+      ? (raw.imageUrls as unknown[])
+          .map((img) => extractMediaPath(img))
+          .filter((img): img is string => Boolean(img))
+          .map((img) => resolveMediaUrl(img))
+      : resolvedImages,
+    category: categoryName ?? '',
+    categoryId: rawCategoryId != null ? String(rawCategoryId) : undefined,
+    categoryName: categoryName ?? undefined,
+    inStock: stockValue != null ? stockValue > 0 : Boolean(raw.inStock ?? true),
+    stock: stockValue,
+    volume: raw.volume || undefined,
+    brand: raw.brand || undefined,
+    type: raw.type || undefined,
+    tags: Array.isArray(raw.tags) ? raw.tags : undefined,
+    isActive: typeof raw.isActive === 'boolean' ? raw.isActive : undefined,
+    isFeatured: typeof raw.isFeatured === 'boolean' ? raw.isFeatured : undefined,
+    createdAt: raw.createdAt || undefined,
+    updatedAt: raw.updatedAt || undefined,
+  };
+};
+
+const buildProductFormData = (data: Partial<CreateProductDTO>) => {
+  const formData = new FormData();
+  const appendIfDefined = (key: string, value: unknown) => {
+    if (value === undefined || value === null) return;
+    if (value instanceof Blob) {
+      formData.append(key, value);
+      return;
+    }
+    formData.append(key, String(value));
+  };
+
+  appendIfDefined('Name', data.name);
+  appendIfDefined('Brand', data.brand);
+  appendIfDefined('Price', data.price);
+  appendIfDefined('OriginalPrice', data.originalPrice);
+  appendIfDefined('Volume', data.volume);
+  appendIfDefined('Type', data.type);
+  appendIfDefined('Description', data.description);
+  appendIfDefined('CategoryId', data.categoryId);
+  appendIfDefined('Stock', data.stock);
+  if (typeof data.isActive === 'boolean') {
+    appendIfDefined('IsActive', data.isActive);
+  }
+  if (typeof data.isFeatured === 'boolean') {
+    appendIfDefined('IsFeatured', data.isFeatured);
+  }
+
+  if (Array.isArray(data.images)) {
+    data.images.forEach((file) => {
+      if (file) {
+        formData.append('Images', file);
+      }
+    });
+  }
+
+  return formData;
+};
+
+const withNormalizedList = (response: any): Product[] => {
+  const extractArray = (payload: any): unknown[] | null => {
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+    if (payload && typeof payload === 'object') {
+      const candidates = [payload.items, payload.data, payload.results, payload.products];
+      for (const candidate of candidates) {
+        if (Array.isArray(candidate)) {
+          return candidate;
+        }
+      }
+    }
+    return null;
+  };
+
+  const array = extractArray(response);
+  if (!array) {
+    return [];
+  }
+
+  return array.map((item) => normalizeProduct(item));
+};
+
+const requestProductEndpoint = async <T>(
+  pathSuffix: string,
+  requester: (url: string) => Promise<T>
+): Promise<T> => {
+  let lastError: any;
+
+  for (const base of PRODUCT_ENDPOINT_CANDIDATES) {
+    try {
+      const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base;
+      const normalizedSuffix = pathSuffix.startsWith('/') ? pathSuffix : `/${pathSuffix}`;
+      const url = `${normalizedBase}${normalizedSuffix === '/' ? '' : normalizedSuffix}`;
+      return await requester(url);
+    } catch (error: any) {
+      if (error?.status === 404) {
+        lastError = error;
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw lastError ?? new Error('Product endpoint not found');
+};
+
+export const productService = {
+  getAll: async (params?: ProductFilterParams): Promise<Product[]> => {
+    const data = await requestProductEndpoint('', (url) => api.get(url, { params }));
+    return withNormalizedList(data);
+  },
+
+  getById: async (id: string): Promise<Product> => {
+    const data = await requestProductEndpoint(`/${id}`, (url) => api.get(url));
+    return normalizeProduct(data);
+  },
+
+  getBySlug: async (slug: string): Promise<Product> => {
+    const data = await requestProductEndpoint(`/slug/${slug}`, (url) => api.get(url));
+    return normalizeProduct(data);
+  },
+
+  getFeatured: async (): Promise<Product[]> => {
+    const data = await requestProductEndpoint('/featured', (url) => api.get(url));
+    return withNormalizedList(data);
+  },
+
+  getDeals: async (): Promise<Product[]> => {
+    const data = await requestProductEndpoint('/deals', (url) => api.get(url));
+    return withNormalizedList(data);
+  },
+
+  search: async (query: string): Promise<Product[]> => {
+    const data = await requestProductEndpoint('/search', (url) =>
+      api.get(url, { params: { q: query } })
+    );
+    return withNormalizedList(data);
+  },
+
+  getByCategory: async (categoryId: string | number): Promise<Product[]> => {
+    const identifier = String(categoryId);
+    const data = await requestProductEndpoint(`/category/${identifier}`, (url) => api.get(url));
+    return withNormalizedList(data);
+  },
+
+  getRelated: async (productId: string | number, limit: number = 8): Promise<Product[]> => {
+    const identifier = String(productId);
+    const data = await requestProductEndpoint(`/${identifier}/related`, (url) =>
+      api.get(url, { params: { limit } })
+    );
+    return withNormalizedList(data);
+  },
+
+  create: async (data: CreateProductDTO): Promise<Product> => {
+    const formData = buildProductFormData(data);
+    const response = await requestProductEndpoint('', (url) =>
+      api.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+    );
+    return normalizeProduct(response);
+  },
+
+  update: async (id: string, data: UpdateProductDTO): Promise<Product> => {
+    const formData = buildProductFormData(data);
+    const response = await requestProductEndpoint(`/${id}`, (url) =>
+      api.put(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+    );
+    return normalizeProduct(response);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await requestProductEndpoint(`/${id}`, (url) => api.delete(url));
+  },
+};
