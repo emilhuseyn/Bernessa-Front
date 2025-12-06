@@ -8,6 +8,7 @@ import { handleApiError } from '../../utils/errorHandler';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useCartStore } from '../../store/cartStore';
 import { useWishlistStore } from '../../store/wishlistStore';
+import { debouncedTranslate } from '../../utils/translateText';
 
 interface ProductFormState {
   name: string;
@@ -18,10 +19,15 @@ interface ProductFormState {
   type: string;
   description: string;
   categoryId: string;
-  stock: string;
   isActive: boolean;
   isFeatured: boolean;
   images: File[];
+  nameEn: string;
+  nameRu: string;
+  typeEn: string;
+  typeRu: string;
+  descriptionEn: string;
+  descriptionRu: string;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5034/api';
@@ -37,10 +43,15 @@ const createInitialFormState = (): ProductFormState => ({
   type: '',
   description: '',
   categoryId: '',
-  stock: '0',
   isActive: true,
   isFeatured: false,
   images: [],
+  nameEn: '',
+  nameRu: '',
+  typeEn: '',
+  typeRu: '',
+  descriptionEn: '',
+  descriptionRu: '',
 });
 
 const resolveImageUrl = (url: string): string => {
@@ -64,6 +75,10 @@ export default function AdminProducts() {
   const [formState, setFormState] = useState<ProductFormState>(createInitialFormState);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [viewImage, setViewImage] = useState<string | null>(null);
+  const [isTranslatingName, setIsTranslatingName] = useState(false);
+  const [isTranslatingType, setIsTranslatingType] = useState(false);
+  const [isTranslatingDesc, setIsTranslatingDesc] = useState(false);
 
   useEffect(() => {
     void fetchData();
@@ -112,14 +127,11 @@ export default function AdminProducts() {
       const resolvedImages = (rawImages ?? []).map((img) => resolveImageUrl(img));
       const images = resolvedImages.length > 0 ? resolvedImages : [PLACEHOLDER_IMAGE];
       const categoryName = product.category || (product.categoryId ? categoryMap[product.categoryId] ?? '' : '');
-      const stockValue = product.stock != null ? product.stock : product.inStock ? 1 : 0;
 
       return {
         ...product,
         images,
         category: categoryName,
-        inStock: stockValue > 0,
-        stock: product.stock ?? stockValue,
       } satisfies Product;
     });
   }, [products, categoryMap]);
@@ -127,7 +139,7 @@ export default function AdminProducts() {
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    return productsWithMeta.filter((product) => {
+    const filtered = productsWithMeta.filter((product) => {
       const matchesSearch =
         !query ||
         product.name.toLowerCase().includes(query) ||
@@ -136,6 +148,13 @@ export default function AdminProducts() {
         selectedCategory === 'all' || product.categoryId === selectedCategory;
 
       return matchesSearch && matchesCategory;
+    });
+
+    // Sort by updatedAt descending (newest first)
+    return filtered.sort((a, b) => {
+      const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+      return dateB - dateA;
     });
   }, [productsWithMeta, searchQuery, selectedCategory]);
 
@@ -159,10 +178,15 @@ export default function AdminProducts() {
         type: product.type ?? '',
         description: product.description ?? '',
         categoryId: product.categoryId ?? '',
-        stock: product.stock != null ? String(product.stock) : product.inStock ? '1' : '0',
         isActive: product.isActive ?? true,
         isFeatured: product.isFeatured ?? false,
         images: [],
+        nameEn: product.translations?.en?.name ?? '',
+        nameRu: product.translations?.ru?.name ?? '',
+        typeEn: product.translations?.en?.type ?? '',
+        typeRu: product.translations?.ru?.type ?? '',
+        descriptionEn: product.translations?.en?.description ?? '',
+        descriptionRu: product.translations?.ru?.description ?? '',
       });
       setExistingImages(product.images ?? []);
     } else {
@@ -184,6 +208,39 @@ export default function AdminProducts() {
       ...prev,
       [name]: value,
     }));
+
+    // Auto-translate specific fields
+    if (name === 'name' && value.trim()) {
+      setIsTranslatingName(true);
+      debouncedTranslate(value, (result) => {
+        setFormState(prev => ({
+          ...prev,
+          nameEn: result.en,
+          nameRu: result.ru,
+        }));
+        setIsTranslatingName(false);
+      });
+    } else if (name === 'type' && value.trim()) {
+      setIsTranslatingType(true);
+      debouncedTranslate(value, (result) => {
+        setFormState(prev => ({
+          ...prev,
+          typeEn: result.en,
+          typeRu: result.ru,
+        }));
+        setIsTranslatingType(false);
+      });
+    } else if (name === 'description' && value.trim()) {
+      setIsTranslatingDesc(true);
+      debouncedTranslate(value, (result) => {
+        setFormState(prev => ({
+          ...prev,
+          descriptionEn: result.en,
+          descriptionRu: result.ru,
+        }));
+        setIsTranslatingDesc(false);
+      });
+    }
   };
 
   const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -213,13 +270,34 @@ export default function AdminProducts() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!formState.name.trim() || !formState.brand.trim()) {
-      toast.error('Məhsul adı və brend daxil edilməlidir');
+    // Validation - Required fields
+    if (!formState.name.trim()) {
+      toast.error('Məhsul adı daxil edilməlidir');
+      return;
+    }
+
+    if (!formState.brand.trim()) {
+      toast.error('Brend daxil edilməlidir');
+      return;
+    }
+
+    if (!formState.volume.trim()) {
+      toast.error('Həcm daxil edilməlidir');
+      return;
+    }
+
+    if (!formState.type.trim()) {
+      toast.error('Ətir növü daxil edilməlidir');
+      return;
+    }
+
+    if (!formState.description.trim()) {
+      toast.error('Təsvir daxil edilməlidir');
       return;
     }
 
     const price = Number(formState.price);
-    if (Number.isNaN(price) || price <= 0) {
+    if (!formState.price.trim() || Number.isNaN(price) || price <= 0) {
       toast.error('Etibarlı qiymət daxil edin');
       return;
     }
@@ -229,9 +307,40 @@ export default function AdminProducts() {
       return;
     }
 
-    const stock = formState.stock ? Number(formState.stock) : 0;
-    if (Number.isNaN(stock) || stock < 0) {
-      toast.error('Stok miqdarı yanlış göstərilib');
+    // Validation - Translation fields
+    if (!formState.nameEn.trim()) {
+      toast.error('İngilis dilində məhsul adı daxil edilməlidir');
+      return;
+    }
+
+    if (!formState.nameRu.trim()) {
+      toast.error('Rus dilində məhsul adı daxil edilməlidir');
+      return;
+    }
+
+    if (!formState.typeEn.trim()) {
+      toast.error('İngilis dilində ətir növü daxil edilməlidir');
+      return;
+    }
+
+    if (!formState.typeRu.trim()) {
+      toast.error('Rus dilində ətir növü daxil edilməlidir');
+      return;
+    }
+
+    if (!formState.descriptionEn.trim()) {
+      toast.error('İngilis dilində təsvir daxil edilməlidir');
+      return;
+    }
+
+    if (!formState.descriptionRu.trim()) {
+      toast.error('Rus dilində təsvir daxil edilməlidir');
+      return;
+    }
+
+    // Validation - Images
+    if (!editingProduct && formState.images.length === 0) {
+      toast.error('Ən azı bir şəkil yükləməlisiniz');
       return;
     }
 
@@ -250,10 +359,15 @@ export default function AdminProducts() {
       type: formState.type.trim(),
       description: formState.description.trim(),
       categoryId: categoryIdNumber,
-      stock,
       isActive: formState.isActive,
       isFeatured: formState.isFeatured,
       images: formState.images.length ? formState.images : undefined,
+      nameEn: formState.nameEn.trim(),
+      nameRu: formState.nameRu.trim(),
+      typeEn: formState.typeEn.trim(),
+      typeRu: formState.typeRu.trim(),
+      descriptionEn: formState.descriptionEn.trim(),
+      descriptionRu: formState.descriptionRu.trim(),
     };
 
     setIsSaving(true);
@@ -406,7 +520,6 @@ export default function AdminProducts() {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Məhsul</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Kateqoriya</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Qiymət</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stok</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Əməliyyatlar</th>
                   </tr>
@@ -416,11 +529,12 @@ export default function AdminProducts() {
                     <tr key={product.id} className="hover:bg-gray-50/60 dark:hover:bg-gray-700/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
+                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all">
                             <img
                               src={product.images[0]}
                               alt={product.name}
                               className="w-full h-full object-cover"
+                              onClick={() => setViewImage(product.images[0])}
                             />
                           </div>
                           <div>
@@ -444,17 +558,6 @@ export default function AdminProducts() {
                             </span>
                           )}
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
-                            product.inStock
-                              ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30'
-                              : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/30'
-                          }`}
-                        >
-                          {product.stock ?? 0} ədəd
-                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1">
@@ -501,8 +604,14 @@ export default function AdminProducts() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-2xl">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          onClick={handleCloseModal}
+        >
+          <div 
+            className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 px-6 py-4">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -608,18 +717,6 @@ export default function AdminProducts() {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stok *</label>
-                  <input
-                    type="number"
-                    name="stock"
-                    value={formState.stock}
-                    onChange={handleInputChange}
-                    min="0"
-                    required
-                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/10"
-                  />
-                </div>
               </div>
 
               <div>
@@ -632,6 +729,168 @@ export default function AdminProducts() {
                   required
                   className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/10"
                 />
+              </div>
+
+              {/* Translations Section */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">Tərcümələr</h3>
+                  {(isTranslatingName || isTranslatingType || isTranslatingDesc) && (
+                    <span className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400">
+                      <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Tərcümə olunur...
+                    </span>
+                  )}
+                </div>
+                
+                {/* English Translation */}
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">🇬🇧 English</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Product Name</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          name="nameEn"
+                          value={formState.nameEn}
+                          onChange={handleInputChange}
+                          disabled={isTranslatingName}
+                          placeholder="Auto-translated"
+                          className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/10 disabled:opacity-50"
+                        />
+                        {isTranslatingName && (
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                            <svg className="h-4 w-4 animate-spin text-indigo-500" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Perfume Type</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          name="typeEn"
+                          value={formState.typeEn}
+                          onChange={handleInputChange}
+                          disabled={isTranslatingType}
+                          placeholder="Auto-translated"
+                          className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/10 disabled:opacity-50"
+                        />
+                        {isTranslatingType && (
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                            <svg className="h-4 w-4 animate-spin text-indigo-500" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Description</label>
+                    <div className="relative">
+                      <textarea
+                        name="descriptionEn"
+                        value={formState.descriptionEn}
+                        onChange={handleInputChange}
+                        disabled={isTranslatingDesc}
+                        placeholder="Auto-translated"
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/10 disabled:opacity-50"
+                      />
+                      {isTranslatingDesc && (
+                        <div className="pointer-events-none absolute top-3 right-3">
+                          <svg className="h-4 w-4 animate-spin text-indigo-500" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Russian Translation */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">🇷🇺 Русский</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Название продукта</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          name="nameRu"
+                          value={formState.nameRu}
+                          onChange={handleInputChange}
+                          disabled={isTranslatingName}
+                          placeholder="Автоматический перевод"
+                          className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/10 disabled:opacity-50"
+                        />
+                        {isTranslatingName && (
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                            <svg className="h-4 w-4 animate-spin text-indigo-500" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Тип аромата</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          name="typeRu"
+                          value={formState.typeRu}
+                          onChange={handleInputChange}
+                          disabled={isTranslatingType}
+                          placeholder="Автоматический перевод"
+                          className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/10 disabled:opacity-50"
+                        />
+                        {isTranslatingType && (
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                            <svg className="h-4 w-4 animate-spin text-indigo-500" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Описание</label>
+                    <div className="relative">
+                      <textarea
+                        name="descriptionRu"
+                        value={formState.descriptionRu}
+                        onChange={handleInputChange}
+                        disabled={isTranslatingDesc}
+                        placeholder="Автоматический перевод"
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/10 disabled:opacity-50"
+                      />
+                      {isTranslatingDesc && (
+                        <div className="pointer-events-none absolute top-3 right-3">
+                          <svg className="h-4 w-4 animate-spin text-indigo-500" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -685,7 +944,8 @@ export default function AdminProducts() {
                             key={`${image}-${index}`}
                             src={image}
                             alt={`Mövcud şəkil ${index + 1}`}
-                            className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
+                            className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-600 cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all"
+                            onClick={() => setViewImage(image)}
                           />
                         ))}
                       </div>
@@ -701,7 +961,8 @@ export default function AdminProducts() {
                             key={`${preview}-${index}`}
                             src={preview}
                             alt={`Yeni şəkil ${index + 1}`}
-                            className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
+                            className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-600 cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all"
+                            onClick={() => setViewImage(preview)}
                           />
                         ))}
                       </div>
@@ -728,6 +989,28 @@ export default function AdminProducts() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {viewImage && (
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 px-4"
+          onClick={() => setViewImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setViewImage(null)}
+              className="absolute -top-12 right-0 p-2 text-white hover:text-gray-300 transition-colors"
+            >
+              <FiX size={32} />
+            </button>
+            <img
+              src={viewImage}
+              alt="Böyük görüntü"
+              className="max-w-full max-h-[90vh] rounded-xl object-contain"
+            />
           </div>
         </div>
       )}

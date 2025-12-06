@@ -10,7 +10,13 @@ interface CategoryCardProps {
 const sanitizeMediaPath = (value: string) => value.replace(/\\/g, '/').replace(/\/{2,}/g, '/').replace(/^\/+/, '');
 
 export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
+  
+  // Get translated category name based on current language
+  const categoryName = currentLanguage !== 'az' && category.translations?.[currentLanguage] 
+    ? category.translations[currentLanguage] 
+    : category.name;
+  
   // Use slug for URL (cleaner URL structure)
   const categoryUrl = category.slug ? `/category/${category.slug}` : `/category/${category.id}`;
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5034/api';
@@ -29,14 +35,14 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         {/* Image Background */}
         <div className="absolute inset-0 bg-gray-200">
           <img
-            src={imageSrc || 'https://via.placeholder.com/400x500?text=' + encodeURIComponent(category.name)}
-            alt={category.name}
+            src={imageSrc || 'https://via.placeholder.com/400x500?text=' + encodeURIComponent(categoryName)}
+            alt={categoryName}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             onError={(event) => {
               const target = event.target as HTMLImageElement;
               if (target.dataset.fallbackApplied) return;
               target.dataset.fallbackApplied = 'true';
-              target.src = 'https://via.placeholder.com/400x500?text=' + encodeURIComponent(category.name);
+              target.src = 'https://via.placeholder.com/400x500?text=' + encodeURIComponent(categoryName);
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
@@ -52,7 +58,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
             </div>
             
             <h3 className="text-3xl font-display font-bold text-white mb-2 drop-shadow-lg">
-              {category.name}
+              {categoryName}
             </h3>
             
             <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">

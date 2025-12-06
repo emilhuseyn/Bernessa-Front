@@ -5,6 +5,7 @@ import { PageTransition } from '../components/layout/PageTransition';
 import { ProductCard } from '../components/product/ProductCard';
 import { useCartStore } from '../store/cartStore';
 import { useWishlistStore } from '../store/wishlistStore';
+import { useTranslation } from '../hooks/useTranslation';
 import { categoryService, productService } from '../services';
 import type { Product, Category } from '../types';
 import { handleApiError } from '../utils/errorHandler';
@@ -13,6 +14,7 @@ import toast from 'react-hot-toast';
 export const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t, currentLanguage } = useTranslation();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -24,6 +26,35 @@ export const ProductPage: React.FC = () => {
   const addItem = useCartStore((state) => state.addItem);
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore();
   const inWishlist = product ? isInWishlist(product.id) : false;
+
+  // Get translated content
+  const productName = useMemo(() => {
+    if (!product) return '';
+    return currentLanguage !== 'az' && product.translations?.[currentLanguage]?.name 
+      ? product.translations[currentLanguage].name 
+      : product.name;
+  }, [product, currentLanguage]);
+
+  const productType = useMemo(() => {
+    if (!product) return '';
+    return currentLanguage !== 'az' && product.translations?.[currentLanguage]?.type 
+      ? product.translations[currentLanguage].type 
+      : product.type;
+  }, [product, currentLanguage]);
+
+  const productDescription = useMemo(() => {
+    if (!product) return '';
+    return currentLanguage !== 'az' && product.translations?.[currentLanguage]?.description 
+      ? product.translations[currentLanguage].description 
+      : product.description;
+  }, [product, currentLanguage]);
+
+  const categoryName = useMemo(() => {
+    if (!category) return product?.category || '';
+    return currentLanguage !== 'az' && category.translations?.[currentLanguage] 
+      ? category.translations[currentLanguage] 
+      : category.name;
+  }, [category, product, currentLanguage]);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -106,7 +137,7 @@ export const ProductPage: React.FC = () => {
 
     addItem({
       productId: product.id,
-      name: product.name,
+      name: productName,
       price: product.price,
       image: product.images?.[0] || '',
       quantity,
@@ -121,7 +152,7 @@ export const ProductPage: React.FC = () => {
     } else {
       addToWishlist({
         productId: product.id,
-        name: product.name,
+        name: productName,
         price: product.price,
         image: product.images?.[0] || '',
       });
@@ -184,10 +215,10 @@ export const ProductPage: React.FC = () => {
                 }
                 className="hover:text-primary-600 transition-colors"
               >
-                {category?.name || product.category || 'Kateqoriya'}
+                {categoryName || 'Kateqoriya'}
               </button>
               <span>/</span>
-              <span className="text-gray-900 font-medium">{product.name}</span>
+              <span className="text-gray-900 font-medium">{productName}</span>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
@@ -196,12 +227,12 @@ export const ProductPage: React.FC = () => {
                 <div className="relative aspect-square rounded-[2.5rem] overflow-hidden shadow-2xl mb-6 group">
                   <img
                     src={product.images[selectedImage]}
-                    alt={product.name}
+                    alt={productName}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   {discount > 0 && (
                     <div className="absolute top-6 left-6 bg-red-500 text-white px-4 py-2 rounded-xl font-bold shadow-lg shadow-red-500/30">
-                      -{discount}% Endirim
+                      -{discount}% {t('product.sale')}
                     </div>
                   )}
                 </div>
@@ -220,7 +251,7 @@ export const ProductPage: React.FC = () => {
                       >
                         <img
                           src={image}
-                          alt={`${product.name} ${index + 1}`}
+                          alt={`${productName} ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
                       </button>
@@ -235,7 +266,7 @@ export const ProductPage: React.FC = () => {
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h1 className="text-4xl lg:text-5xl font-display font-bold text-gray-900 mb-4 leading-tight">
-                        {product.name}
+                        {productName}
                       </h1>
                       <div className="flex items-center gap-4 mb-6">
                         {product.brand && (
@@ -248,13 +279,6 @@ export const ProductPage: React.FC = () => {
                             {product.volume}
                           </span>
                         )}
-                        <span className={`text-sm font-medium px-3 py-1 rounded-full ${
-                          product.inStock 
-                            ? 'bg-green-100 text-green-700 border border-green-200' 
-                            : 'bg-red-100 text-red-700 border border-red-200'
-                        }`}>
-                          {product.inStock ? 'Stokda Var' : 'Bitib'}
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -271,7 +295,7 @@ export const ProductPage: React.FC = () => {
                   </div>
 
                   <p className="text-gray-600 text-lg leading-relaxed mb-8">
-                    {product.description}
+                    {productDescription}
                   </p>
 
                   {/* Selectors */}
@@ -302,8 +326,7 @@ export const ProductPage: React.FC = () => {
                   <div className="flex gap-4">
                     <button
                       onClick={handleAddToCart}
-                      disabled={!product.inStock}
-                      className="flex-1 bg-gradient-to-r from-gray-900 to-gray-800 text-white font-bold text-lg py-4 px-8 rounded-2xl shadow-xl shadow-gray-900/20 hover:shadow-2xl hover:shadow-gray-900/30 transform hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                      className="flex-1 bg-gradient-to-r from-gray-900 to-gray-800 text-white font-bold text-lg py-4 px-8 rounded-2xl shadow-xl shadow-gray-900/20 hover:shadow-2xl hover:shadow-gray-900/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3"
                     >
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />

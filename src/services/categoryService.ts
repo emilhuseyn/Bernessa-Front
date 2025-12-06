@@ -5,12 +5,16 @@ export interface CreateCategoryDTO {
   name: string;
   slug: string;
   image?: File;
+  nameEn?: string;
+  nameRu?: string;
 }
 
 export interface UpdateCategoryDTO {
   name?: string;
   slug?: string;
   image?: File;
+  nameEn?: string;
+  nameRu?: string;
 }
 
 export const categoryService = {
@@ -37,6 +41,12 @@ export const categoryService = {
     if (data.image) {
       formData.append('image', data.image);
     }
+    if (data.nameEn) {
+      formData.append('NameEn', data.nameEn);
+    }
+    if (data.nameRu) {
+      formData.append('NameRu', data.nameRu);
+    }
     
     return api.post('/categorieses', formData, {
       headers: {
@@ -52,6 +62,12 @@ export const categoryService = {
     if (data.slug) formData.append('slug', data.slug);
     if (data.image) {
       formData.append('image', data.image);
+    }
+    if (data.nameEn) {
+      formData.append('NameEn', data.nameEn);
+    }
+    if (data.nameRu) {
+      formData.append('NameRu', data.nameRu);
     }
     
     return api.put(`/categorieses/${id}`, formData, {

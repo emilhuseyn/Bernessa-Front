@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Layout } from '../components/layout/Layout';
@@ -12,7 +12,7 @@ import { handleApiError } from '../utils/errorHandler';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const HomePage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -305,6 +305,16 @@ export const HomePage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {dealsProducts.map((product) => {
                     const discount = computeDiscount(product);
+                    
+                    // Get translated product name and description
+                    const productName = currentLanguage !== 'az' && product.translations?.[currentLanguage]?.name
+                      ? product.translations[currentLanguage].name
+                      : product.name;
+                    
+                    const productDescription = currentLanguage !== 'az' && product.translations?.[currentLanguage]?.description
+                      ? product.translations[currentLanguage].description
+                      : product.description;
+                    
                     return (
                       <Link
                         key={product.id}
@@ -315,7 +325,7 @@ export const HomePage: React.FC = () => {
                           <div className="relative overflow-hidden rounded-2xl bg-gray-100 h-48 mb-5">
                             <img
                               src={resolveProductImage(product)}
-                              alt={product.name}
+                              alt={productName}
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                               onError={(event) => {
                                 const target = event.currentTarget;
@@ -324,6 +334,17 @@ export const HomePage: React.FC = () => {
                                 target.src = fallbackDealImage;
                               }}
                             />
+                            
+                            {/* Overlay Gradient */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            
+                            {/* Hover Info Text */}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
+                              <p className="text-white text-center text-sm font-medium drop-shadow-lg bg-black/60 backdrop-blur-sm rounded-xl px-4 py-3">
+                                {t('home.deals.imageDisclaimer')}
+                              </p>
+                            </div>
+                            
                             {discount > 0 && (
                               <span className="absolute top-4 left-4 rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white shadow-lg">
                                 -{discount}%
@@ -335,10 +356,10 @@ export const HomePage: React.FC = () => {
                               {product.brand || product.category || t('home.deals.flashDeal')}
                             </p>
                             <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 group-hover:text-red-600">
-                              {product.name}
+                              {productName}
                             </h3>
                             <p className="text-sm text-gray-500 line-clamp-2">
-                              {product.description}
+                              {productDescription}
                             </p>
                             <div className="flex items-baseline gap-2 pt-2">
                               <span className="text-xl font-bold text-gray-900">{product.price.toFixed(2)} ₼</span>

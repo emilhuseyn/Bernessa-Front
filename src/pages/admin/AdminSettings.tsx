@@ -1,240 +1,219 @@
 import { useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
+import toast from 'react-hot-toast';
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5034/api';
 
 export default function AdminSettings() {
-  const [activeTab, setActiveTab] = useState<'general' | 'payment' | 'shipping' | 'notifications'>('general');
-
-  const tabs = [
-    { id: 'general' as const, label: 'Ümumi', icon: '⚙️' },
-    { id: 'payment' as const, label: 'Ödəniş', icon: '💳' },
-    { id: 'shipping' as const, label: 'Çatdırılma', icon: '🚚' },
-    { id: 'notifications' as const, label: 'Bildirişlər', icon: '🔔' },
-  ];
+  const [resetPasswordData, setResetPasswordData] = useState({
+    email: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [isResetting, setIsResetting] = useState(false);
 
   return (
     <AdminLayout>
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Tənzimləmələr</h1>
-        <p className="text-gray-600">Mağaza tənzimləmələrini idarə edin</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Təhlükəsizlik</h1>
+        <p className="text-gray-600 dark:text-gray-400">Admin şifrə və təhlükəsizlik tənzimləmələri</p>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white rounded-3xl shadow-lg shadow-gray-200/50 border border-gray-100 p-2 mb-8 inline-flex gap-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-6 py-3 rounded-2xl font-medium transition-all ${
-              activeTab === tab.id
-                ? 'bg-gradient-to-r from-primary-600 to-secondary-600 text-white shadow-lg'
-                : 'text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            <span className="mr-2">{tab.icon}</span>
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* General Settings */}
-      {activeTab === 'general' && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-3xl shadow-lg shadow-gray-200/50 border border-gray-100 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Mağaza Məlumatları</h2>
+      {/* Security Settings */}
+      <div className="space-y-6">
+          {/* Reset Admin Password */}
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-lg shadow-gray-200/50 dark:shadow-slate-900/50 border border-gray-100 dark:border-slate-700 p-6">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl">🔐</span>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Admin Şifrəsini Sıfırla</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Adminin emailini daxil edərək onun şifrəsini sıfırlaya bilərsiniz</p>
+              </div>
+            </div>
             
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Adı</label>
-                  <input
-                    type="text"
-                    defaultValue="E-Commerce Store"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                  />
-                </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              
+              if (resetPasswordData.newPassword !== resetPasswordData.confirmPassword) {
+                toast.error('Şifrələr uyğun gəlmir');
+                return;
+              }
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                  <input
-                    type="email"
-                    defaultValue="info@ecommerce.az"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                  />
-                </div>
+              // Password strength validation
+              const password = resetPasswordData.newPassword;
+              
+              if (password.length < 8) {
+                toast.error('Şifrə ən azı 8 simvol olmalıdır');
+                return;
+              }
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
-                  <input
-                    type="tel"
-                    defaultValue="+994501234567"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                  />
-                </div>
+              if (!/[A-Z]/.test(password)) {
+                toast.error('Şifrə ən azı 1 böyük hərf (A-Z) ehtiva etməlidir');
+                return;
+              }
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Valyuta</label>
-                  <select className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
-                    <option>AZN (₼)</option>
-                    <option>USD ($)</option>
-                    <option>EUR (€)</option>
-                    <option>TRY (₺)</option>
-                  </select>
-                </div>
-              </div>
+              if (!/[a-z]/.test(password)) {
+                toast.error('Şifrə ən azı 1 kiçik hərf (a-z) ehtiva etməlidir');
+                return;
+              }
 
+              if (!/[0-9]/.test(password)) {
+                toast.error('Şifrə ən azı 1 rəqəm (0-9) ehtiva etməlidir');
+                return;
+              }
+
+              if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+                toast.error('Şifrə ən azı 1 xüsusi simvol (!@#$%^&* və s.) ehtiva etməlidir');
+                return;
+              }
+
+              setIsResetting(true);
+
+              try {
+                const token = localStorage.getItem('admin-token');
+                const response = await axios.post(
+                  `${API_BASE_URL}/auths/admin/reset-password`,
+                  {
+                    email: resetPasswordData.email,
+                    newPassword: resetPasswordData.newPassword,
+                    confirmPassword: resetPasswordData.confirmPassword
+                  },
+                  {
+                    headers: {
+                      'Content-Type': 'application/json',
+                      ...(token && { Authorization: `Bearer ${token}` })
+                    }
+                  }
+                );
+
+                if (response.data.success) {
+                  toast.success('Şifrə uğurla sıfırlandı');
+                  setResetPasswordData({ email: '', newPassword: '', confirmPassword: '' });
+                } else {
+                  toast.error(response.data.message || 'Şifrə sıfırlanarkən xəta baş verdi');
+                }
+              } catch (error: unknown) {
+                let errorMessage = 'Şifrə sıfırlanarkən xəta baş verdi';
+                if (error && typeof error === 'object' && 'response' in error) {
+                  const axiosError = error as { response?: { data?: { message?: string } } };
+                  errorMessage = axiosError.response?.data?.message || errorMessage;
+                }
+                toast.error(errorMessage);
+              } finally {
+                setIsResetting(false);
+              }
+            }} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Ünvan</label>
-                <textarea
-                  rows={3}
-                  defaultValue="Bakı şəhəri, Nizami küç. 123"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none"
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  İstifadəçi Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={resetPasswordData.email}
+                  onChange={(e) => setResetPasswordData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="admin@example.com"
+                  required
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Haqqında</label>
-                <textarea
-                  rows={4}
-                  defaultValue="Keyfiyyətli məhsullar və sürətli çatdırılma ilə xidmətinizdəyik."
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Yeni Şifrə <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={resetPasswordData.newPassword}
+                    onChange={(e) => setResetPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                    placeholder="Ən azı 8 simvol"
+                    required
+                    minLength={8}
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Şifrə Təsdiqi <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={resetPasswordData.confirmPassword}
+                    onChange={(e) => setResetPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    placeholder="Şifrəni təkrarlayın"
+                    required
+                    minLength={8}
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  />
+                </div>
               </div>
 
-              <button className="px-6 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-2xl font-semibold hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                Dəyişiklikləri Saxla
+              <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl">
+                <svg className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  <strong>Diqqət!</strong> Bu əməliyyat geri qaytarıla bilməz. Adminin şifrəsi dəyişdiriləcək.
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isResetting}
+                className="w-full px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl font-semibold hover:shadow-xl hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              >
+                {isResetting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Sıfırlanır...
+                  </span>
+                ) : (
+                  'Şifrəni Sıfırla'
+                )}
               </button>
-            </div>
+            </form>
           </div>
+
+          {/* Password Requirements */}
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-3xl border border-purple-200 dark:border-purple-800 p-6">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <span className="text-xl">🔒</span>
+              Şifrə Tələbləri
+            </h3>
+            <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 dark:text-purple-400 mt-0.5">✅</span>
+                <span>Ən azı 8 simvol uzunluğunda olmalıdır</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 dark:text-purple-400 mt-0.5">✅</span>
+                <span>Ən azı 1 böyük hərf (A-Z) ehtiva etməlidir</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 dark:text-purple-400 mt-0.5">✅</span>
+                <span>Ən azı 1 kiçik hərf (a-z) ehtiva etməlidir</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 dark:text-purple-400 mt-0.5">✅</span>
+                <span>Ən azı 1 rəqəm (0-9) ehtiva etməlidir</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 dark:text-purple-400 mt-0.5">✅</span>
+                <span>Ən azı 1 xüsusi simvol (!@#$%^&* və s.) ehtiva etməlidir</span>
+              </li>
+            </ul>
+          </div>
+ 
+         
         </div>
-      )}
-
-      {/* Payment Settings */}
-      {activeTab === 'payment' && (
-        <div className="bg-white rounded-3xl shadow-lg shadow-gray-200/50 border border-gray-100 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Ödəniş Üsulları</h2>
-          
-          <div className="space-y-4">
-            {[
-              { name: 'Kart ilə ödəniş', enabled: true, icon: '💳' },
-              { name: 'Nağd ödəniş', enabled: true, icon: '💵' },
-              { name: 'Bank köçürməsi', enabled: false, icon: '🏦' },
-              { name: 'PayPal', enabled: false, icon: '📱' },
-            ].map((method) => (
-              <div key={method.name} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{method.icon}</span>
-                  <span className="font-medium text-gray-900">{method.name}</span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" defaultChecked={method.enabled} className="sr-only peer" />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-primary-600 peer-checked:to-secondary-600"></div>
-                </label>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6">
-            <button className="px-6 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-2xl font-semibold hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              Ödəniş Tənzimləmələrini Saxla
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Shipping Settings */}
-      {activeTab === 'shipping' && (
-        <div className="bg-white rounded-3xl shadow-lg shadow-gray-200/50 border border-gray-100 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Çatdırılma Tənzimləmələri</h2>
-          
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Standart çatdırılma müddəti (gün)</label>
-                <input
-                  type="number"
-                  defaultValue="3"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Sürətli çatdırılma müddəti (gün)</label>
-                <input
-                  type="number"
-                  defaultValue="1"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Standart çatdırılma qiyməti (₼)</label>
-                <input
-                  type="number"
-                  defaultValue="5"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Pulsuz çatdırılma limiti (₼)</label>
-                <input
-                  type="number"
-                  defaultValue="50"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-              <div>
-                <h3 className="font-medium text-gray-900">Sürətli çatdırılma</h3>
-                <p className="text-sm text-gray-600">1 gün ərzində çatdırılma xidməti</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" defaultChecked className="sr-only peer" />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-primary-600 peer-checked:to-secondary-600"></div>
-              </label>
-            </div>
-
-            <button className="px-6 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-2xl font-semibold hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              Çatdırılma Tənzimləmələrini Saxla
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Notifications Settings */}
-      {activeTab === 'notifications' && (
-        <div className="bg-white rounded-3xl shadow-lg shadow-gray-200/50 border border-gray-100 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Bildiriş Tənzimləmələri</h2>
-          
-          <div className="space-y-4">
-            {[
-              { name: 'Yeni sifariş bildirişləri', enabled: true },
-              { name: 'Stok azalması bildirişləri', enabled: true },
-              { name: 'Yeni rəy bildirişləri', enabled: true },
-              { name: 'Gündəlik hesabat', enabled: false },
-              { name: 'Həftəlik hesabat', enabled: true },
-              { name: 'Aylıq hesabat', enabled: false },
-            ].map((notification) => (
-              <div key={notification.name} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-                <span className="font-medium text-gray-900">{notification.name}</span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" defaultChecked={notification.enabled} className="sr-only peer" />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-primary-600 peer-checked:to-secondary-600"></div>
-                </label>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6">
-            <button className="px-6 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-2xl font-semibold hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              Bildiriş Tənzimləmələrini Saxla
-            </button>
-          </div>
-        </div>
-      )}
     </AdminLayout>
   );
 }

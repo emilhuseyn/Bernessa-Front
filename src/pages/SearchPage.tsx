@@ -8,8 +8,10 @@ import { productService } from '../services';
 import { handleApiError } from '../utils/errorHandler';
 import type { Product } from '../types';
 import { products as mockProducts } from '../data/mockData';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const SearchPage: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const query = searchParams.get('q') || '';
@@ -100,10 +102,10 @@ export const SearchPage: React.FC = () => {
 
   const resultCountLabel = useMemo(() => {
     if (isLoading) {
-      return 'Axtarılır...';
+      return t('search.searching');
     }
-    return `${resultCount} məhsul tapıldı`;
-  }, [isLoading, resultCount]);
+    return `${resultCount} ${t('search.productsFound')}`;
+  }, [isLoading, resultCount, t]);
 
   return (
     <Layout>
@@ -119,15 +121,15 @@ export const SearchPage: React.FC = () => {
               <div className="max-w-3xl space-y-6">
                 {query ? (
                   <>
-                    <p className="text-sm uppercase tracking-[0.3em] text-white/60">Axtarış nəticələri</p>
+                    <p className="text-sm uppercase tracking-[0.3em] text-white/60">{t('search.resultsFor')}</p>
                     <h1 className="text-4xl md:text-6xl font-display font-bold text-white">
-                      “{query}” <span className="text-primary-400">üçün</span>
+                      "{query}" <span className="text-primary-400">{t('search.for')}</span>
                     </h1>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm uppercase tracking-[0.3em] text-white/60">Kolleksiya</p>
-                    <h1 className="text-4xl md:text-6xl font-display font-bold text-white">Bütün Məhsullar</h1>
+                    <p className="text-sm uppercase tracking-[0.3em] text-white/60">{t('search.collection')}</p>
+                    <h1 className="text-4xl md:text-6xl font-display font-bold text-white">{t('search.allProducts')}</h1>
                   </>
                 )}
 
@@ -145,15 +147,15 @@ export const SearchPage: React.FC = () => {
                       type="search"
                       value={searchInput}
                       onChange={(event) => setSearchInput(event.target.value)}
-                      placeholder="Sevdiyiniz ətiri axtarın..."
+                      placeholder={t('search.placeholder')}
                       className="w-full rounded-2xl bg-white/10 text-white placeholder:text-white/60 backdrop-blur px-12 py-4 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary-400/80 focus:border-transparent"
-                      aria-label="Məhsul axtarışı"
+                      aria-label={t('search.label')}
                     />
                     <button
                       type="submit"
                       className="absolute right-3 top-1/2 -translate-y-1/2 px-5 py-2 rounded-xl bg-primary-500 text-white font-semibold hover:bg-primary-600 transition-colors"
                     >
-                      Axtar
+                      {t('search.searchButton')}
                     </button>
                   </div>
                 </form>
@@ -170,7 +172,7 @@ export const SearchPage: React.FC = () => {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      Filtri təmizlə
+                      {t('search.clearFilter')}
                     </button>
                   )}
                   {error && <span className="text-sm text-red-100">{error}</span>}
@@ -203,13 +205,13 @@ export const SearchPage: React.FC = () => {
                       </svg>
                     </div>
                   }
-                  title="Heç bir məhsul tapılmadı"
+                  title={t('search.noProductsFound')}
                   description={
                     query
-                      ? `“${query}” üçün uyğun nəticə tapılmadı. Digər açar sözlərlə yenidən cəhd edin.`
-                      : 'Hazırda göstəriləcək məhsul yoxdur. Tezliklə yenidən yoxlayın.'
+                      ? `"${query}" ${t('search.noResultsFor')}`
+                      : t('search.noProductsAvailable')
                   }
-                  actionLabel="Hamısına Bax"
+                  actionLabel={t('search.viewAll')}
                   onAction={() => navigate('/search')}
                 />
               )}

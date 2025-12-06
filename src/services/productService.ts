@@ -10,10 +10,15 @@ export interface CreateProductDTO {
   type: string;
   description: string;
   categoryId: number;
-  stock: number;
   isActive?: boolean;
   isFeatured?: boolean;
   images?: File[];
+  nameEn?: string;
+  nameRu?: string;
+  typeEn?: string;
+  typeRu?: string;
+  descriptionEn?: string;
+  descriptionRu?: string;
 }
 
 export interface UpdateProductDTO extends Partial<CreateProductDTO> {
@@ -84,7 +89,6 @@ const normalizeProduct = (raw: any): Product => {
       price: 0,
       images: [FALLBACK_IMAGE],
       category: '',
-      inStock: false,
     };
   }
 
@@ -119,7 +123,6 @@ const normalizeProduct = (raw: any): Product => {
   const resolvedImages = rawImages.length
     ? rawImages.map((img) => resolveMediaUrl(img))
     : [FALLBACK_IMAGE];
-  const stockValue = raw.stock != null ? Number(raw.stock) : undefined;
   const originalPriceValue = raw.originalPrice != null ? Number(raw.originalPrice) : undefined;
   const rawCategoryId = coalesceValue(
     raw.categoryId,
@@ -156,8 +159,6 @@ const normalizeProduct = (raw: any): Product => {
     category: categoryName ?? '',
     categoryId: rawCategoryId != null ? String(rawCategoryId) : undefined,
     categoryName: categoryName ?? undefined,
-    inStock: stockValue != null ? stockValue > 0 : Boolean(raw.inStock ?? true),
-    stock: stockValue,
     volume: raw.volume || undefined,
     brand: raw.brand || undefined,
     type: raw.type || undefined,
@@ -166,6 +167,29 @@ const normalizeProduct = (raw: any): Product => {
     isFeatured: typeof raw.isFeatured === 'boolean' ? raw.isFeatured : undefined,
     createdAt: raw.createdAt || undefined,
     updatedAt: raw.updatedAt || undefined,
+    translations: raw.translations ? {
+      en: raw.translations.en || raw.translations.En || raw.translations.EN || (raw.nameEn ? {
+        name: raw.nameEn,
+        type: raw.typeEn,
+        description: raw.descriptionEn
+      } : undefined),
+      ru: raw.translations.ru || raw.translations.Ru || raw.translations.RU || (raw.nameRu ? {
+        name: raw.nameRu,
+        type: raw.typeRu,
+        description: raw.descriptionRu
+      } : undefined)
+    } : (raw.nameEn || raw.nameRu ? {
+      en: raw.nameEn ? {
+        name: raw.nameEn,
+        type: raw.typeEn,
+        description: raw.descriptionEn
+      } : undefined,
+      ru: raw.nameRu ? {
+        name: raw.nameRu,
+        type: raw.typeRu,
+        description: raw.descriptionRu
+      } : undefined
+    } : undefined),
   };
 };
 
@@ -188,13 +212,29 @@ const buildProductFormData = (data: Partial<CreateProductDTO>) => {
   appendIfDefined('Type', data.type);
   appendIfDefined('Description', data.description);
   appendIfDefined('CategoryId', data.categoryId);
-  appendIfDefined('Stock', data.stock);
   if (typeof data.isActive === 'boolean') {
     appendIfDefined('IsActive', data.isActive);
   }
   if (typeof data.isFeatured === 'boolean') {
     appendIfDefined('IsFeatured', data.isFeatured);
   }
+
+  // Add translation fields
+  console.log('Translation fields before sending:', {
+    nameEn: data.nameEn,
+    nameRu: data.nameRu,
+    typeEn: data.typeEn,
+    typeRu: data.typeRu,
+    descriptionEn: data.descriptionEn,
+    descriptionRu: data.descriptionRu
+  });
+  
+  appendIfDefined('NameEn', data.nameEn);
+  appendIfDefined('NameRu', data.nameRu);
+  appendIfDefined('TypeEn', data.typeEn);
+  appendIfDefined('TypeRu', data.typeRu);
+  appendIfDefined('DescriptionEn', data.descriptionEn);
+  appendIfDefined('DescriptionRu', data.descriptionRu);
 
   if (Array.isArray(data.images)) {
     data.images.forEach((file) => {

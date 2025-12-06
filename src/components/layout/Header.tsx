@@ -42,23 +42,23 @@ export const Header: React.FC = () => {
         }}
       ></div>
       <div className="container-custom relative">
-        <div className="flex items-center h-14 gap-4">
+        <div className="flex items-center h-14 gap-2 md:gap-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center group">
+          <Link to="/" className="flex items-center group flex-shrink-0">
             <div className="flex flex-col items-center">
-              <span className="text-[1.6rem] font-bold text-white tracking-tight leading-none group-hover:text-primary-400 transition-colors" style={{ fontFamily: 'Deca Serif, serif' }}>BARSENSE</span>
-              <span className="text-[10px] text-gray-400 tracking-widest uppercase font-medium">Luxury Perfumes</span>
+              <span className="text-lg sm:text-[1.6rem] font-bold text-white tracking-tight leading-none group-hover:text-primary-400 transition-colors" style={{ fontFamily: 'Deca Serif, serif' }}>BARSENSE</span>
+              <span className="text-[8px] sm:text-[10px] text-gray-400 tracking-widest uppercase font-medium hidden xs:block">Luxury Perfumes</span>
             </div>
           </Link>
 
           {/* Actions */}
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-1 sm:gap-2 md:gap-3">
             <LanguageSwitcher />
             
             <button
               type="button"
               onClick={handleSearchClick}
-              className="p-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group"
+              className="p-2 sm:p-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group"
               aria-label="Axtarış səhifəsinə keç"
             >
               <svg
@@ -71,8 +71,8 @@ export const Header: React.FC = () => {
               </svg>
             </button>
             {/* Wishlist */}
-            <Link to="/wishlist" className="relative p-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group">
-              <svg className="w-6 h-6 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <Link to="/wishlist" className="relative p-2 sm:p-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -81,15 +81,15 @@ export const Header: React.FC = () => {
                 />
               </svg>
               {wishlistItems.length > 0 && (
-                <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-gray-800">
+                <span className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-gray-800">
                   {wishlistItems.length}
                 </span>
               )}
             </Link>
 
             {/* Cart */}
-            <Link to="/cart" className="relative p-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group">
-              <svg className="w-6 h-6 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <Link to="/cart" className="relative p-2 sm:p-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -98,7 +98,7 @@ export const Header: React.FC = () => {
                 />
               </svg>
               {cartCount > 0 && (
-                <span className="absolute top-2 right-2 bg-primary-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-gray-800">
+                <span className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-primary-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-gray-800">
                   {cartCount}
                 </span>
               )}

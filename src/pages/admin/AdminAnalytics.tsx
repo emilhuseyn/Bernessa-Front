@@ -230,7 +230,7 @@ export default function AdminAnalytics() {
         key: 'totalProducts',
         title: 'Məhsullar',
         value: formatNumber(analytics?.totalProducts ?? 0),
-        helper: `Aktiv: ${formatNumber(analytics?.activeProducts ?? 0)} / Stokda az: ${formatNumber(analytics?.lowStockProducts ?? 0)}`,
+        helper: `Aktiv: ${formatNumber(analytics?.activeProducts ?? 0)} / Passiv: ${formatNumber(analytics?.inactiveProducts ?? 0)}`,
         bg: 'bg-lime-50',
         color: 'text-lime-600',
         icon: (
@@ -249,19 +249,6 @@ export default function AdminAnalytics() {
         icon: (
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M7 10h10m-9 4h8m-7 4h6" />
-          </svg>
-        ),
-      },
-      {
-        key: 'outOfStock',
-        title: 'Tükənmiş məhsullar',
-        value: formatNumber(analytics?.outOfStockProducts ?? 0),
-        helper: 'Təcili stok yenilənməsi tələb olunur',
-        bg: 'bg-rose-50',
-        color: 'text-rose-600',
-        icon: (
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 2l2 4 4 .5-3 3 .7 4.5-3.7-2-3.7 2 .7-4.5-3-3 4-.5 2-4z" />
           </svg>
         ),
       },
@@ -335,14 +322,13 @@ export default function AdminAnalytics() {
   const topCategories = analytics?.topCategories ?? [];
   const topSelling = (analytics?.topSellingProducts ?? []).slice(0, 5);
   const topRevenue = (analytics?.topRevenueProducts ?? []).slice(0, 5);
-  const lowStock = (analytics?.lowStockAlerts ?? []).slice(0, 6);
   const pendingOrders = (analytics?.pendingOrders ?? []).slice(0, 6);
 
   return (
     <AdminLayout>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Analitika Mərkəzi</h1>
-        <p className="text-sm text-gray-500 mt-1">Satışlar, sifarişlər və stok performansı üzrə detallı göstəricilər</p>
+        <p className="text-sm text-gray-500 mt-1">Satışlar, sifarişlər və performans üzrə detallı göstəricilər</p>
       </div>
 
       {error && (
@@ -559,9 +545,6 @@ export default function AdminAnalytics() {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-semibold text-gray-900">{formatCurrency(product.revenue)}</p>
-                            {product.currentStock !== undefined && (
-                              <p className="text-xs text-gray-400">Stok: {formatNumber(product.currentStock)}</p>
-                            )}
                           </div>
                         </div>
                       ))
@@ -596,7 +579,7 @@ export default function AdminAnalytics() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 gap-8">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold text-gray-900">Gözləyən sifarişlər</h2>
@@ -629,33 +612,6 @@ export default function AdminAnalytics() {
                     )}
                   </tbody>
                 </table>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-gray-900">Aşağı stok xəbərdarlıqları</h2>
-                <span className="text-sm text-gray-500">{formatNumber(analytics?.lowStockProducts ?? 0)} məhsul</span>
-              </div>
-              <div className="space-y-4">
-                {lowStock.length === 0 ? (
-                  <p className="text-sm text-gray-500">Aşağı stoklu məhsul yoxdur</p>
-                ) : (
-                  lowStock.map((product) => (
-                    <div key={product.productId} className="flex items-center justify-between rounded-2xl border border-gray-100 p-4 hover:border-primary-200 transition-colors">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{product.productName}</p>
-                        <p className="text-xs text-gray-500">{product.productBrand ?? 'Naməlum brend'}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className={`text-sm font-semibold ${product.isOutOfStock ? 'text-rose-600' : 'text-amber-600'}`}>
-                          Stok: {formatNumber(product.currentStock)}
-                        </p>
-                        <p className="text-xs text-gray-400">{formatCurrency(product.price)}</p>
-                      </div>
-                    </div>
-                  ))
-                )}
               </div>
             </div>
           </div>

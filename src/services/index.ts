@@ -39,7 +39,6 @@ export type {
   DashboardTopProduct,
   OrderStatusBreakdown,
   CategoryPerformance,
-  LowStockProduct,
   PaymentMethodStats,
   DailyRevenue,
   MonthlyRevenue,

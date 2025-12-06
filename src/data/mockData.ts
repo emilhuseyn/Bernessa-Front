@@ -19,7 +19,7 @@ export const products: Product[] = [
       'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800',
     ],
     category: 'Qadın Ətirlər',
-    inStock: true,
+
     volume: '100ml',
     brand: 'Chanel',
     type: 'Eau de Parfum',
@@ -35,7 +35,7 @@ export const products: Product[] = [
       'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800',
     ],
     category: 'Kişi Ətirlər',
-    inStock: true,
+
     volume: '100ml',
     brand: 'Dior',
     type: 'Eau de Toilette',
@@ -50,7 +50,7 @@ export const products: Product[] = [
       'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800',
     ],
     category: 'Unisex Ətirlər',
-    inStock: true,
+
     volume: '50ml',
     brand: 'Tom Ford',
     type: 'Eau de Parfum',
@@ -66,7 +66,7 @@ export const products: Product[] = [
       'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=800',
     ],
     category: 'Kişi Ətirlər',
-    inStock: true,
+
     volume: '100ml',
     brand: 'Versace',
     type: 'Eau de Toilette',
@@ -81,7 +81,7 @@ export const products: Product[] = [
       'https://images.unsplash.com/photo-1541643600914-78b084683601?w=800',
     ],
     category: 'Qadın Ətirlər',
-    inStock: true,
+
     volume: '100ml',
     brand: 'Lancôme',
     type: 'Eau de Parfum',
@@ -96,7 +96,7 @@ export const products: Product[] = [
       'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=800',
     ],
     category: 'Lüks Kolleksiya',
-    inStock: true,
+
     volume: '100ml',
     brand: 'Creed',
     type: 'Eau de Parfum',
@@ -112,7 +112,7 @@ export const products: Product[] = [
       'https://images.unsplash.com/photo-1541643600914-78b084683601?w=800',
     ],
     category: 'Qadın Ətirlər',
-    inStock: true,
+
     volume: '90ml',
     brand: 'YSL',
     type: 'Eau de Parfum',
@@ -127,7 +127,7 @@ export const products: Product[] = [
       'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=800',
     ],
     category: 'Kişi Ətirlər',
-    inStock: true,
+
     volume: '100ml',
     brand: 'Paco Rabanne',
     type: 'Eau de Toilette',
@@ -142,7 +142,7 @@ export const products: Product[] = [
       'https://images.unsplash.com/photo-1541643600914-78b084683601?w=800',
     ],
     category: 'Qadın Ətirlər',
-    inStock: true,
+
     volume: '100ml',
     brand: 'Gucci',
     type: 'Eau de Parfum',
@@ -158,7 +158,7 @@ export const products: Product[] = [
       'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=800',
     ],
     category: 'Kişi Ətirlər',
-    inStock: true,
+
     volume: '75ml',
     brand: 'Giorgio Armani',
     type: 'Eau de Toilette',
@@ -173,7 +173,7 @@ export const products: Product[] = [
       'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800',
     ],
     category: 'Unisex Ətirlər',
-    inStock: true,
+
     volume: '100ml',
     brand: 'Jo Malone',
     type: 'Cologne',
@@ -188,7 +188,7 @@ export const products: Product[] = [
       'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800',
     ],
     category: 'Lüks Kolleksiya',
-    inStock: true,
+
     volume: '70ml',
     brand: 'Maison Francis Kurkdjian',
     type: 'Extrait de Parfum',

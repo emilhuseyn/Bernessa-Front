@@ -37,6 +37,16 @@ api.interceptors.response.use(
   (error) => {
     const axiosError = error as AxiosError;
 
+    // Log detailed error for debugging
+    console.error('API Error:', {
+      status: axiosError.response?.status,
+      statusText: axiosError.response?.statusText,
+      url: axiosError.config?.url,
+      method: axiosError.config?.method,
+      data: axiosError.response?.data,
+      message: axiosError.message,
+    });
+
     if (axiosError.response?.status === 401) {
       localStorage.removeItem('admin-token');
       if (window.location.pathname.startsWith('/admin')) {

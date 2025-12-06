@@ -34,7 +34,6 @@ export interface DashboardTopProduct {
   imageUrl?: string;
   brand?: string;
   categoryName?: string;
-  currentStock?: number;
   price?: number;
 }
 
@@ -58,15 +57,6 @@ export interface CategoryPerformance {
   totalSold: number;
   revenue: number;
   orderCount: number;
-}
-
-export interface LowStockProduct {
-  productId: string;
-  productName: string;
-  productBrand?: string;
-  currentStock: number;
-  isOutOfStock: boolean;
-  price: number;
 }
 
 export interface PaymentMethodStats {
@@ -121,15 +111,12 @@ export interface DashboardAnalytics {
   totalProducts: number;
   activeProducts: number;
   inactiveProducts: number;
-  outOfStockProducts: number;
-  lowStockProducts: number;
   featuredProducts: number;
   totalCategories: number;
   topCategories: CategoryPerformance[];
   topProducts: DashboardTopProduct[];
   topSellingProducts: DashboardTopProduct[];
   topRevenueProducts: DashboardTopProduct[];
-  lowStockAlerts: LowStockProduct[];
   recentOrders: DashboardRecentOrder[];
   pendingOrders: DashboardRecentOrder[];
   paymentMethodStats: PaymentMethodStats[];
@@ -177,10 +164,6 @@ type RawDashboardResponse = {
   ActiveProducts?: number;
   inactiveProducts?: number;
   InactiveProducts?: number;
-  outOfStockProducts?: number;
-  OutOfStockProducts?: number;
-  lowStockProducts?: number;
-  LowStockProducts?: number;
   featuredProducts?: number;
   FeaturedProducts?: number;
   totalCategories?: number;
@@ -197,8 +180,6 @@ type RawDashboardResponse = {
   OrderStatusBreakdown?: RawOrderStatusBreakdown;
   topCategories?: RawCategoryPerformance[];
   TopCategories?: RawCategoryPerformance[];
-  lowStockAlerts?: RawLowStockProduct[];
-  LowStockAlerts?: RawLowStockProduct[];
   pendingOrders?: RawDashboardOrder[];
   PendingOrders?: RawDashboardOrder[];
   paymentMethodStats?: RawPaymentMethodStat[];
@@ -269,10 +250,6 @@ type RawDashboardProduct = {
   Image?: string;
   imageUrl?: string;
   ImageUrl?: string;
-  stock?: number;
-  Stock?: number;
-  currentStock?: number;
-  CurrentStock?: number;
   price?: number;
   Price?: number;
 };
@@ -313,25 +290,6 @@ type RawCategoryPerformance = {
   Revenue?: number;
   orderCount?: number;
   OrderCount?: number;
-};
-
-type RawLowStockProduct = {
-  productId?: string | number;
-  ProductId?: string | number;
-  productName?: string;
-  ProductName?: string;
-  productBrand?: string;
-  ProductBrand?: string;
-  brand?: string;
-  Brand?: string;
-  currentStock?: number;
-  CurrentStock?: number;
-  stock?: number;
-  Stock?: number;
-  isOutOfStock?: boolean;
-  IsOutOfStock?: boolean;
-  price?: number;
-  Price?: number;
 };
 
 type RawPaymentMethodStat = {
@@ -451,7 +409,6 @@ const normalizeDashboardResponse = (data: RawDashboardResponse): DashboardAnalyt
   const rawTopSellingProducts = coalesce(data.topSellingProducts, data.TopSellingProducts, rawTopProducts) ?? [];
   const rawTopRevenueProducts = coalesce(data.topRevenueProducts, data.TopRevenueProducts, rawTopSellingProducts) ?? [];
   const rawCategories = coalesce(data.topCategories, data.TopCategories) ?? [];
-  const rawLowStock = coalesce(data.lowStockAlerts, data.LowStockAlerts) ?? [];
   const rawPaymentMethods = coalesce(data.paymentMethodStats, data.PaymentMethodStats) ?? [];
   const rawLast7Days = coalesce(data.last7DaysRevenue, data.Last7DaysRevenue) ?? [];
   const rawLast12Months = coalesce(data.last12MonthsRevenue, data.Last12MonthsRevenue) ?? [];
@@ -480,7 +437,6 @@ const normalizeDashboardResponse = (data: RawDashboardResponse): DashboardAnalyt
 
   const normalizeProduct = (product: RawDashboardProduct, index: number, prefix: string): DashboardTopProduct => {
     const id = coalesce(product.id, product.Id, product.productId, product.ProductId, product.name, product.Name) ?? `${prefix}-${index}`;
-    const stockRaw = coalesce(product.currentStock, product.CurrentStock, product.stock, product.Stock);
     const priceRaw = coalesce(product.price, product.Price);
     return {
       id: String(id),
@@ -492,7 +448,6 @@ const normalizeDashboardResponse = (data: RawDashboardResponse): DashboardAnalyt
       ),
       revenue: toNumber(coalesce(product.revenue, product.Revenue, product.totalRevenue, product.TotalRevenue, 0)),
       imageUrl: coalesce(product.imageUrl, product.ImageUrl, product.image, product.Image),
-      currentStock: stockRaw !== undefined ? toNumber(stockRaw) : undefined,
       price: priceRaw !== undefined ? toNumber(priceRaw) : undefined,
     };
   };
@@ -514,21 +469,6 @@ const normalizeDashboardResponse = (data: RawDashboardResponse): DashboardAnalyt
       totalSold: toNumber(coalesce(category.totalSold, category.TotalSold, 0)),
       revenue: toNumber(coalesce(category.revenue, category.Revenue, 0)),
       orderCount: toNumber(coalesce(category.orderCount, category.OrderCount, 0)),
-    };
-  });
-
-  const lowStockAlerts: LowStockProduct[] = rawLowStock.map((product, index) => {
-    const productId = coalesce(product.productId, product.ProductId, index);
-    const stockValue = toNumber(coalesce(product.currentStock, product.CurrentStock, product.stock, product.Stock, 0));
-    const explicitOutOfStock = coalesce(product.isOutOfStock, product.IsOutOfStock);
-
-    return {
-      productId: String(productId ?? index),
-      productName: String(coalesce(product.productName, product.ProductName, 'Naməlum məhsul')),
-      productBrand: coalesce(product.productBrand, product.ProductBrand, product.brand, product.Brand),
-      currentStock: stockValue,
-      isOutOfStock: explicitOutOfStock !== undefined ? toBoolean(explicitOutOfStock) : stockValue === 0,
-      price: toNumber(coalesce(product.price, product.Price, 0)),
     };
   });
 
@@ -603,15 +543,12 @@ const normalizeDashboardResponse = (data: RawDashboardResponse): DashboardAnalyt
     totalProducts: toNumber(coalesce(data.totalProducts, data.TotalProducts, 0)),
     activeProducts: toNumber(coalesce(data.activeProducts, data.ActiveProducts, 0)),
     inactiveProducts: toNumber(coalesce(data.inactiveProducts, data.InactiveProducts, 0)),
-    outOfStockProducts: toNumber(coalesce(data.outOfStockProducts, data.OutOfStockProducts, 0)),
-    lowStockProducts: toNumber(coalesce(data.lowStockProducts, data.LowStockProducts, 0)),
     featuredProducts: toNumber(coalesce(data.featuredProducts, data.FeaturedProducts, 0)),
     totalCategories: toNumber(coalesce(data.totalCategories, data.TotalCategories, 0)),
     topCategories,
     topProducts,
     topSellingProducts: normalizedTopSellingProducts,
     topRevenueProducts: normalizedTopRevenueProducts,
-    lowStockAlerts,
     recentOrders,
     pendingOrders,
     paymentMethodStats,

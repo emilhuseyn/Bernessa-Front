@@ -6,6 +6,7 @@ import { FiPlus, FiEdit2, FiTrash2, FiX, FiEye } from 'react-icons/fi';
 import { handleApiError } from '../../utils/errorHandler';
 import toast from 'react-hot-toast';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { debouncedTranslate } from '../../utils/translateText';
 
 export default function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -16,11 +17,14 @@ export default function AdminCategories() {
     name: '',
     slug: '',
     image: null as File | null,
+    nameEn: '',
+    nameRu: '',
   });
   const [imagePreview, setImagePreview] = useState<string>('');
   const [viewCategory, setViewCategory] = useState<Category | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -49,6 +53,8 @@ export default function AdminCategories() {
         name: category.name,
         slug: category.slug,
         image: null,
+        nameEn: category.translations?.en || '',
+        nameRu: category.translations?.ru || '',
       });
       setImagePreview(category.imageUrl || '');
     } else {
@@ -57,6 +63,8 @@ export default function AdminCategories() {
         name: '',
         slug: '',
         image: null,
+        nameEn: '',
+        nameRu: '',
       });
       setImagePreview('');
     }
@@ -70,6 +78,8 @@ export default function AdminCategories() {
       name: '',
       slug: '',
       image: null,
+      nameEn: '',
+      nameRu: '',
     });
     setImagePreview('');
   };
@@ -137,6 +147,19 @@ export default function AdminCategories() {
       name,
       slug: generateSlug(name),
     });
+
+    // Auto-translate to English and Russian
+    if (name.trim()) {
+      setIsTranslating(true);
+      debouncedTranslate(name, (result) => {
+        setFormData(prev => ({
+          ...prev,
+          nameEn: result.en,
+          nameRu: result.ru,
+        }));
+        setIsTranslating(false);
+      });
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,13 +179,41 @@ export default function AdminCategories() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validation
+    if (!formData.name.trim()) {
+      toast.error('Kateqoriya adı daxil edilməlidir');
+      return;
+    }
+
+    if (!formData.slug.trim()) {
+      toast.error('Slug daxil edilməlidir');
+      return;
+    }
+
+    if (!formData.nameEn.trim()) {
+      toast.error('İngilis dilində ad daxil edilməlidir');
+      return;
+    }
+
+    if (!formData.nameRu.trim()) {
+      toast.error('Rus dilində ad daxil edilməlidir');
+      return;
+    }
+
+    if (!editingCategory && !formData.image) {
+      toast.error('Şəkil yükləməlisiniz');
+      return;
+    }
+
     try {
       if (editingCategory) {
         // Update
         const updateData: UpdateCategoryDTO = {
-          name: formData.name,
-          slug: formData.slug,
+          name: formData.name.trim(),
+          slug: formData.slug.trim(),
           image: formData.image || undefined,
+          nameEn: formData.nameEn.trim(),
+          nameRu: formData.nameRu.trim(),
         };
         const updated = await categoryService.update(editingCategory.id, updateData);
         setCategories(categories.map(c => c.id === editingCategory.id ? updated : c));
@@ -170,9 +221,11 @@ export default function AdminCategories() {
       } else {
         // Create
         const createData = {
-          name: formData.name,
-          slug: formData.slug,
+          name: formData.name.trim(),
+          slug: formData.slug.trim(),
           image: formData.image || undefined,
+          nameEn: formData.nameEn.trim(),
+          nameRu: formData.nameRu.trim(),
         };
         const created = await categoryService.create(createData);
         setCategories([...categories, created]);
@@ -355,8 +408,14 @@ export default function AdminCategories() {
           )}
 
           {viewCategory && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-              <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl dark:bg-gray-800">
+            <div 
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+              onClick={handleCloseView}
+            >
+              <div 
+                className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl dark:bg-gray-800"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="p-6">
                   <div className="mb-6 flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Kateqoriya Məlumatı</h2>
@@ -388,8 +447,14 @@ export default function AdminCategories() {
           )}
 
           {isModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-              <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl dark:bg-gray-800">
+            <div 
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+              onClick={handleCloseModal}
+            >
+              <div 
+                className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl dark:bg-gray-800"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="p-6">
                   <div className="mb-6 flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -426,6 +491,72 @@ export default function AdminCategories() {
                         required
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">URL-də istifadə olunacaq (avtomatik yaranır)</p>
+                    </div>
+
+                    {/* Translations Section */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                      <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-base font-semibold text-gray-900 dark:text-white">Tərcümələr</h3>
+                        {isTranslating && (
+                          <span className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400">
+                            <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            Tərcümə olunur...
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* English Translation */}
+                      <div className="mb-4">
+                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          🇬🇧 Category Name (English)
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={formData.nameEn}
+                            onChange={(e) => setFormData({ ...formData, nameEn: e.target.value })}
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                            placeholder="Automatically translated from Azerbaijani"
+                            disabled={isTranslating}
+                          />
+                          {isTranslating && (
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                              <svg className="h-4 w-4 animate-spin text-indigo-500" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Russian Translation */}
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          🇷🇺 Название категории (Русский)
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={formData.nameRu}
+                            onChange={(e) => setFormData({ ...formData, nameRu: e.target.value })}
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                            placeholder="Автоматический перевод с азербайджанского"
+                            disabled={isTranslating}
+                          />
+                          {isTranslating && (
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                              <svg className="h-4 w-4 animate-spin text-indigo-500" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     <div>

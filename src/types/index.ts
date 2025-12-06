@@ -1,3 +1,9 @@
+export interface ProductTranslation {
+  name: string;
+  type: string;
+  description: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -11,8 +17,6 @@ export interface Product {
   category: string;
   categoryId?: string;
   categoryName?: string;
-  inStock: boolean;
-  stock?: number;
   volume?: string;
   brand?: string;
   type?: string;
@@ -21,6 +25,7 @@ export interface Product {
   isFeatured?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  translations?: Record<string, ProductTranslation>;
 }
 
 export interface CartItem {
@@ -123,10 +128,13 @@ export interface RecentOrder {
 export interface Category {
   id: string;
   name: string;
+  nameEn?: string;
+  nameRu?: string;
   slug: string;
   image: string;
   imageUrl?: string;
   productCount: number;
+  translations?: Record<string, string>;
 }
 
 export interface Filter {
