@@ -1,14 +1,31 @@
 interface FormattedApiError {
   status?: number;
-  data?: { message?: string; [key: string]: unknown } | null;
+  data?: { 
+    message?: string; 
+    errors?: string[];
+    [key: string]: unknown;
+  } | null;
   message?: string;
   request?: unknown;
-  response?: { status?: number; data?: { message?: string } };
+  response?: { 
+    status?: number; 
+    data?: { 
+      message?: string;
+      errors?: string[];
+    };
+  };
 }
 
 export const handleApiError = (error: unknown): string => {
   const formatted = error as FormattedApiError;
   const status = formatted?.status ?? formatted?.response?.status;
+  
+  // Check for errors array first
+  const errors = formatted?.data?.errors ?? formatted?.response?.data?.errors;
+  if (errors && Array.isArray(errors) && errors.length > 0) {
+    return errors.join(', ');
+  }
+  
   const message =
     formatted?.data?.message ??
     formatted?.response?.data?.message ??
@@ -18,7 +35,7 @@ export const handleApiError = (error: unknown): string => {
   if (status) {
     switch (status) {
       case 400:
-        return 'Yanlış məlumat göndərildi';
+        return message || 'Yanlış məlumat göndərildi';
       case 401:
         return 'Giriş tələb olunur';
       case 403:
@@ -26,7 +43,7 @@ export const handleApiError = (error: unknown): string => {
       case 404:
         return 'Məlumat tapılmadı';
       case 500:
-        return 'Server xətası';
+        return message || 'Server xətası';
       default:
         return message || 'Xəta baş verdi';
     }
