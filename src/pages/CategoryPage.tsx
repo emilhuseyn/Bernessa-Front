@@ -66,7 +66,16 @@ export const CategoryPage: React.FC = () => {
       setIsLoading(true);
 
       try {
-        const categoryData = await categoryService.getBySlug(slug);
+        // First get all categories to find ID by slug
+        const allCategories = await categoryService.getAll();
+        const foundCategory = allCategories.find(c => c.slug === slug);
+        
+        if (!foundCategory) {
+          throw new Error('Category not found');
+        }
+
+        // Then get full category data by ID
+        const categoryData = await categoryService.getById(foundCategory.id.toString());
         setCategory(categoryData);
 
         try {

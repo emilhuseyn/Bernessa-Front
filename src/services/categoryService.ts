@@ -1,6 +1,21 @@
 import api from './api';
 import type { Category } from '../types';
 
+// Normalize category data from API
+const normalizeCategory = (raw: any): Category => {
+  return {
+    id: raw.id || raw._id,
+    name: raw.name,
+    nameEn: raw.nameEn || raw.NameEn || raw.name_en || raw.translations?.en,
+    nameRu: raw.nameRu || raw.NameRu || raw.name_ru || raw.translations?.ru,
+    slug: raw.slug,
+    image: raw.image || raw.imageUrl || '',
+    imageUrl: raw.imageUrl || raw.image,
+    productCount: raw.productCount || 0,
+    translations: raw.translations
+  };
+};
+
 export interface CreateCategoryDTO {
   name: string;
   slug: string;
@@ -20,17 +35,20 @@ export interface UpdateCategoryDTO {
 export const categoryService = {
   // Get all categories
   getAll: async (): Promise<Category[]> => {
-    return api.get('/categorieses');
+    const data = await api.get('/categorieses');
+    return Array.isArray(data) ? data.map(normalizeCategory) : [];
   },
 
   // Get category by ID
   getById: async (id: string): Promise<Category> => {
-    return api.get(`/categorieses/${id}`);
+    const data = await api.get(`/categorieses/${id}`);
+    return normalizeCategory(data);
   },
 
   // Get category by slug
   getBySlug: async (slug: string): Promise<Category> => {
-    return api.get(`/categorieses/slug/${slug}`);
+    const data = await api.get(`/categorieses/slug/${slug}`);
+    return normalizeCategory(data);
   },
 
   // Create category (Admin only)
@@ -48,11 +66,12 @@ export const categoryService = {
       formData.append('NameRu', data.nameRu);
     }
     
-    return api.post('/categorieses', formData, {
+    const result = await api.post('/categorieses', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
+    return normalizeCategory(result);
   },
 
   // Update category (Admin only)
@@ -70,11 +89,12 @@ export const categoryService = {
       formData.append('NameRu', data.nameRu);
     }
     
-    return api.put(`/categorieses/${id}`, formData, {
+    const result = await api.put(`/categorieses/${id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
+    return normalizeCategory(result);
   },
 
   // Delete category (Admin only)
