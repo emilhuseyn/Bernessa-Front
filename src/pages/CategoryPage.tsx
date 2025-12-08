@@ -4,7 +4,6 @@ import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
 import { ProductCard } from '../components/product/ProductCard';
 import { categoryService, productService } from '../services';
-import { products as mockProducts, categories as mockCategories } from '../data/mockData';
 import type { Filter, SortOption, Category, Product } from '../types';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLanguageStore } from '../store/languageStore';
@@ -88,15 +87,8 @@ export const CategoryPage: React.FC = () => {
         }
       } catch (error) {
         console.error('Error fetching category:', error);
-        const mockCategory = mockCategories.find((c) => c.slug === slug || c.id === slug);
-        setCategory(mockCategory || null);
-
-        if (mockCategory) {
-          const filtered = mockProducts.filter((p) => p.category === mockCategory.name);
-          setCategoryProducts(filtered);
-        } else {
-          setCategoryProducts([]);
-        }
+        setCategory(null);
+        setCategoryProducts([]);
       } finally {
         setIsLoading(false);
       }
