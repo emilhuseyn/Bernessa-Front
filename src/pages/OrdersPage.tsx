@@ -2,8 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const OrdersPage: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <Layout>
       <PageTransition>
@@ -16,15 +19,15 @@ export const OrdersPage: React.FC = () => {
 
           <div className="relative mx-auto flex min-h-[55vh] max-w-4xl flex-col items-center justify-center px-6 py-20 text-center text-white">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.35em] backdrop-blur">
-              Barsense
+              {t('orders.badge')}
             </span>
 
             <h1 className="mt-7 text-4xl font-semibold leading-tight sm:text-5xl">
-              Müştəri sifariş paneli deaktiv edilib
+              {t('orders.title')}
             </h1>
 
             <p className="mt-4 max-w-2xl text-base text-white/75 sm:text-lg">
-              Hazırda sifarişlərinizi izləmək üçün ayrıca giriş tələb olunmur. Sifariş məlumatlarınızı checkout zamanı e-poçt ünvanınıza göndəririk.
+              {t('orders.description')}
             </p>
 
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
@@ -32,7 +35,7 @@ export const OrdersPage: React.FC = () => {
                 to="/"
                 className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-primary-500/20 transition hover:-translate-y-0.5 hover:shadow-xl"
               >
-                Alış-verişə davam et
+                {t('orders.continueShopping')}
                 <svg className="h-4 w-4 transition group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-7-7l7 7-7 7" />
                 </svg>
@@ -41,21 +44,21 @@ export const OrdersPage: React.FC = () => {
                 to="/contact"
                 className="inline-flex items-center gap-2 rounded-full border border-white/10 px-6 py-3 text-sm font-semibold text-white/90 transition hover:bg-white/10"
               >
-                Sifarişim barədə soruş
+                {t('orders.askAboutOrder')}
               </Link>
             </div>
 
             <div className="mt-12 grid w-full gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 text-left shadow-lg shadow-primary-500/10 backdrop-blur-sm sm:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <h2 className="text-sm font-semibold text-white/90">Status sorğuları</h2>
+                <h2 className="text-sm font-semibold text-white/90">{t('orders.statusInquiries')}</h2>
                 <p className="text-xs text-white/70">
-                  Sifariş nömrənizi və əlaqə məlumatınızı bizimlə paylaşın, status barədə dərhal məlumat verək.
+                  {t('orders.statusDescription')}
                 </p>
               </div>
               <div className="flex flex-col gap-2">
-                <h2 className="text-sm font-semibold text-white/90">Admin girişinə ehtiyacınız varsa</h2>
+                <h2 className="text-sm font-semibold text-white/90">{t('orders.needAdmin')}</h2>
                 <Link to="/admin/login" className="text-xs font-semibold text-primary-300 transition hover:text-primary-200">
-                  Admin panelinə keçid
+                  {t('orders.adminPanel')}
                 </Link>
               </div>
             </div>

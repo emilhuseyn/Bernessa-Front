@@ -31,6 +31,7 @@ import { useAdminStore } from './store/adminStore';
 import { Toaster } from 'react-hot-toast';
 import { LoadingSpinner } from './components/ui/Loading';
 import NotFoundPage from './pages/NotFoundPage';
+import { ScrollToTop } from './components/layout/ScrollToTop';
 
 function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAdminAuthenticated = useAdminStore((state) => state.isAdminAuthenticated);
@@ -50,6 +51,7 @@ function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Toaster
         position="top-center"
         toastOptions={{
