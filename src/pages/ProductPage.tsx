@@ -202,8 +202,8 @@ export const ProductPage: React.FC = () => {
 
           <div className="container-custom relative z-10">
             {/* Breadcrumb */}
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-8 animate-fade-in">
-              <button onClick={() => navigate('/')} className="hover:text-primary-600 transition-colors">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8 animate-fade-in overflow-x-auto">
+              <button onClick={() => navigate('/')} className="hover:text-primary-600 transition-colors whitespace-nowrap">
                 {t('product.home')}
               </button>
               <span>/</span>
@@ -213,15 +213,15 @@ export const ProductPage: React.FC = () => {
                     ? navigate(`/category/${category.slug}`)
                     : navigate('/categories')
                 }
-                className="hover:text-primary-600 transition-colors"
+                className="hover:text-primary-600 transition-colors whitespace-nowrap"
               >
                 {categoryName || t('product.category')}
               </button>
               <span>/</span>
-              <span className="text-gray-900 font-medium">{productName}</span>
+              <span className="text-gray-900 font-medium truncate max-w-[150px] sm:max-w-none">{productName}</span>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
               {/* Images Section - Sticky */}
               <div className="relative h-fit lg:sticky lg:top-32 animate-slide-up">
                 <div className="relative aspect-square rounded-[2.5rem] overflow-hidden shadow-2xl mb-6 group">
@@ -262,20 +262,20 @@ export const ProductPage: React.FC = () => {
 
               {/* Product Details */}
               <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                <div className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-8 lg:p-10 shadow-soft border border-white/50">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h1 className="text-4xl lg:text-5xl font-display font-bold text-gray-900 mb-4 leading-tight">
+                <div className="bg-white/60 backdrop-blur-xl rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 lg:p-10 shadow-soft border border-white/50">
+                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                    <div className="w-full">
+                      <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-display font-bold text-gray-900 mb-3 sm:mb-4 leading-tight break-words">
                         {productName}
                       </h1>
-                      <div className="flex items-center gap-4 mb-6">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
                         {product.brand && (
-                          <span className="text-sm font-medium px-3 py-1 rounded-full bg-primary-50 text-primary-700 border border-primary-200">
+                          <span className="text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full bg-primary-50 text-primary-700 border border-primary-200">
                             {product.brand}
                           </span>
                         )}
                         {product.volume && (
-                          <span className="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700">
+                          <span className="text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full bg-gray-100 text-gray-700">
                             {product.volume}
                           </span>
                         )}
@@ -283,38 +283,38 @@ export const ProductPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-baseline gap-4 mb-8 pb-8 border-b border-gray-100">
-                    <span className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700">
+                  <div className="flex flex-wrap items-baseline gap-2 sm:gap-4 mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-gray-100">
+                    <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700 whitespace-nowrap">
                       {product.price.toFixed(2)} ₼
                     </span>
                     {product.originalPrice && (
-                      <span className="text-2xl text-gray-400 line-through decoration-2">
+                      <span className="text-lg sm:text-xl lg:text-2xl text-gray-400 line-through decoration-2 whitespace-nowrap">
                         {product.originalPrice.toFixed(2)} ₼
                       </span>
                     )}
                   </div>
 
-                  <p className="text-gray-600 text-lg leading-relaxed mb-8">
+                  <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed mb-6 sm:mb-8">
                     {productDescription}
                   </p>
 
                   {/* Selectors */}
-                  <div className="space-y-8 mb-10">
+                  <div className="space-y-6 sm:space-y-8 mb-8 sm:mb-10">
                     <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">
+                      <label className="block text-xs sm:text-sm font-bold text-gray-900 mb-3 sm:mb-4 uppercase tracking-wider">
                         Miqdar
                       </label>
                       <div className="inline-flex items-center bg-gray-100 rounded-xl p-1">
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="w-10 h-10 flex items-center justify-center rounded-lg bg-white shadow-sm text-gray-600 hover:text-primary-600 transition-colors"
+                          className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg bg-white shadow-sm text-gray-600 hover:text-primary-600 transition-colors"
                         >
                           -
                         </button>
-                        <span className="w-12 text-center font-bold text-lg text-gray-900">{quantity}</span>
+                        <span className="w-10 sm:w-12 text-center font-bold text-base sm:text-lg text-gray-900">{quantity}</span>
                         <button
                           onClick={() => setQuantity(quantity + 1)}
-                          className="w-10 h-10 flex items-center justify-center rounded-lg bg-white shadow-sm text-gray-600 hover:text-primary-600 transition-colors"
+                          className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg bg-white shadow-sm text-gray-600 hover:text-primary-600 transition-colors"
                         >
                           +
                         </button>
@@ -323,25 +323,25 @@ export const ProductPage: React.FC = () => {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-4">
+                  <div className="flex gap-3 sm:gap-4">
                     <button
                       onClick={handleAddToCart}
-                      className="flex-1 bg-gradient-to-r from-gray-900 to-gray-800 text-white font-bold text-lg py-4 px-8 rounded-2xl shadow-xl shadow-gray-900/20 hover:shadow-2xl hover:shadow-gray-900/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3"
+                      className="flex-1 bg-gradient-to-r from-gray-900 to-gray-800 text-white font-bold text-sm sm:text-base lg:text-lg py-3 sm:py-4 px-4 sm:px-8 rounded-xl sm:rounded-2xl shadow-xl shadow-gray-900/20 hover:shadow-2xl hover:shadow-gray-900/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3"
                     >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                       </svg>
-                      {t('product.addToCart')}
+                      <span className="whitespace-nowrap">{t('product.addToCart')}</span>
                     </button>
                     <button 
                       onClick={handleToggleWishlist}
-                      className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
+                      className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all duration-300 shrink-0 ${
                         inWishlist 
                           ? 'border-red-200 bg-red-50 text-red-500' 
                           : 'border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50'
                       }`}
                     >
-                      <svg className="w-6 h-6" fill={inWishlist ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6" fill={inWishlist ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
                     </button>
@@ -351,23 +351,23 @@ export const ProductPage: React.FC = () => {
             </div>
 
             {/* Related Products */}
-            <section className="mt-32">
-              <div className="flex items-center justify-between mb-10">
-                <h2 className="text-3xl font-display font-bold text-gray-900">{t('product.relatedProducts')}</h2>
+            <section className="mt-16 sm:mt-24 lg:mt-32">
+              <div className="flex items-center justify-between mb-6 sm:mb-10">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-gray-900">{t('product.relatedProducts')}</h2>
               </div>
               {isRelatedLoading ? (
                 <div className="flex items-center justify-center h-32">
                   <div className="h-10 w-10 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
                 </div>
               ) : relatedProducts.length > 0 ? (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                   {relatedProducts.slice(0, 4).map((item) => (
                     <ProductCard key={item.id} product={item} />
                   ))}
                 </div>
               ) : (
-                <div className="bg-white rounded-2xl shadow-soft p-10 text-center space-y-3">
-                  <p className="text-gray-600 text-lg font-medium">
+                <div className="bg-white rounded-2xl shadow-soft p-6 sm:p-10 text-center space-y-3">
+                  <p className="text-gray-600 text-sm sm:text-base lg:text-lg font-medium">
                     Bu kateqoriyada başqa məhsul tapılmadı.
                   </p>
                   <Link

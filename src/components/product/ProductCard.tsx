@@ -101,21 +101,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Content */}
         <div className="pt-4 px-2 pb-2">
           <div className="mb-2">
-            <p className="text-xs font-medium text-primary-600 mb-1 uppercase tracking-wider">{product.brand || product.category}</p>
+            <p className="text-xs font-medium text-primary-600 mb-1 uppercase tracking-wider truncate">{product.brand || product.category}</p>
             <h3 className="font-display font-bold text-gray-900 text-lg leading-tight group-hover:text-primary-600 transition-colors line-clamp-1">
               {productName}
             </h3>
             {product.volume && (
-              <p className="text-xs text-gray-500 mt-1">{product.volume}</p>
+              <p className="text-xs text-gray-500 mt-1 truncate">{product.volume}</p>
             )}
           </div>
           
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-xl font-bold text-gray-900">
+          <div className="flex flex-wrap items-baseline gap-2 mt-2">
+            <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
               {product.price.toFixed(2)} ₼
             </span>
             {product.originalPrice && (
-              <span className="text-sm text-gray-400 line-through decoration-red-400">
+              <span className="text-sm text-gray-400 line-through decoration-red-400 whitespace-nowrap">
                 {product.originalPrice.toFixed(2)} ₼
               </span>
             )}
