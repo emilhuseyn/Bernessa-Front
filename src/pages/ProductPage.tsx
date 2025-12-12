@@ -178,12 +178,12 @@ export const ProductPage: React.FC = () => {
     return (
       <Layout>
         <div className="container-custom py-32 text-center">
-          <h1 className="text-3xl font-display font-bold mb-4">Məhsul tapılmadı</h1>
+          <h1 className="text-3xl font-display font-bold mb-4">{t('product.notFound')}</h1>
           <button
             onClick={() => navigate('/')}
             className="px-8 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-all"
           >
-            Ana Səhifəyə Qayıt
+            {t('product.backToHome')}
           </button>
         </div>
       </Layout>
@@ -204,7 +204,7 @@ export const ProductPage: React.FC = () => {
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-8 animate-fade-in">
               <button onClick={() => navigate('/')} className="hover:text-primary-600 transition-colors">
-                Ana Səhifə
+                {t('product.home')}
               </button>
               <span>/</span>
               <button
@@ -215,7 +215,7 @@ export const ProductPage: React.FC = () => {
                 }
                 className="hover:text-primary-600 transition-colors"
               >
-                {categoryName || 'Kateqoriya'}
+                {categoryName || t('product.category')}
               </button>
               <span>/</span>
               <span className="text-gray-900 font-medium">{productName}</span>
@@ -360,7 +360,7 @@ export const ProductPage: React.FC = () => {
                   <div className="h-10 w-10 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
                 </div>
               ) : relatedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                   {relatedProducts.slice(0, 4).map((item) => (
                     <ProductCard key={item.id} product={item} />
                   ))}

@@ -123,6 +123,10 @@ export const translations = {
     'product.inStock': 'Stokda var',
     'product.sale': 'Endirim',
     'product.relatedProducts': 'Sizə maraqlı ola bilər',
+    'product.home': 'Ana Səhifə',
+    'product.category': 'Kateqoriya',
+    'product.notFound': 'Məhsul tapılmadı',
+    'product.backToHome': 'Ana Səhifəyə Qayıt',
     
     // Category Card
     'category.products': 'Məhsul',
@@ -421,6 +425,10 @@ export const translations = {
     'product.inStock': 'In Stock',
     'product.sale': 'Sale',
     'product.relatedProducts': 'You May Also Like',
+    'product.home': 'Home',
+    'product.category': 'Category',
+    'product.notFound': 'Product Not Found',
+    'product.backToHome': 'Back to Home',
 
     // Category Card
     'category.products': 'Products',
@@ -719,6 +727,10 @@ export const translations = {
     'product.inStock': 'В наличии',
     'product.sale': 'Скидка',
     'product.relatedProducts': 'Вам также может понравиться',
+    'product.home': 'Главная',
+    'product.category': 'Категория',
+    'product.notFound': 'Товар не найден',
+    'product.backToHome': 'Вернуться на главную',
     
     // Category Card
     'category.products': 'Товаров',

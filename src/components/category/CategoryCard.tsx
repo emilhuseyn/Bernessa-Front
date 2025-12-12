@@ -31,7 +31,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
   
   return (
     <Link to={categoryUrl} className="group block relative">
-      <div className="relative h-[400px] overflow-hidden rounded-[2rem] shadow-lg transition-all duration-500 hover:shadow-2xl hover:shadow-primary-500/20">
+      <div className="relative h-[500px] overflow-hidden rounded-[2rem] shadow-lg transition-all duration-500 hover:shadow-2xl hover:shadow-primary-500/20">
         {/* Image Background */}
         <div className="absolute inset-0 bg-gray-200">
           <img
