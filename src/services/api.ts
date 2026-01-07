@@ -29,7 +29,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     // Backend returns {success: true, data: [...]}
-    if (response.data && response.data.success !== undefined) {
+    if (response.data && typeof response.data === 'object' && 'success' in response.data) {
+      // For DELETE requests or when data is null/undefined, return the whole response
+      if (response.data.data === null || response.data.data === undefined) {
+        return response.data;
+      }
       return response.data.data;
     }
     return response.data;
@@ -38,13 +42,14 @@ api.interceptors.response.use(
     const axiosError = error as AxiosError;
 
     // Log detailed error for debugging
-    console.error('API Error:', {
+    console.error('❌ API Error:', {
       status: axiosError.response?.status,
       statusText: axiosError.response?.statusText,
       url: axiosError.config?.url,
-      method: axiosError.config?.method,
+      method: axiosError.config?.method?.toUpperCase(),
+      fullUrl: axiosError.config?.baseURL + axiosError.config?.url,
       data: axiosError.response?.data,
-      message: axiosError.message,
+      errorMessage: (axiosError.response?.data as any)?.message || axiosError.message,
     });
 
     if (axiosError.response?.status === 401) {

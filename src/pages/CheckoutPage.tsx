@@ -131,6 +131,7 @@ export const CheckoutPage = () => {
         return {
           productId,
           quantity: item.quantity,
+          volume: item.volume,
         };
       })
       .filter((item): item is { productId: number; quantity: number } => Boolean(item));
@@ -348,7 +349,10 @@ export const CheckoutPage = () => {
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-semibold text-white line-clamp-2">{item.name}</p>
-                          <p className="mt-1 text-xs text-white/60">{t('checkout.quantity')}: {item.quantity}</p>
+                          <div className="mt-1 flex gap-2 text-xs text-white/60">
+                            {item.volume && <span>Həcm: {item.volume}</span>}
+                            <span>Miqdar: {item.quantity}</span>
+                          </div>
                         </div>
                         <p className="text-sm font-semibold text-white/90">{(item.price * item.quantity).toFixed(2)} AZN</p>
                       </div>

@@ -15,7 +15,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { t, currentLanguage } = useTranslation();
   const addItem = useCartStore((state) => state.addItem);
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore();
-  const inWishlist = isInWishlist(product.id);
+  
+  const firstVariant = product.variants?.[0];
+  const volume = firstVariant ? firstVariant.volume : product.volume;
+  const inWishlist = isInWishlist(product.id, volume);
   const primaryImage = product.images?.[0] || FALLBACK_IMAGE;
 
   // Get translated content based on current language
@@ -33,29 +36,42 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
+    const firstVariant = product.variants?.[0];
+    const price = firstVariant ? firstVariant.price : product.price;
+    const volume = firstVariant ? firstVariant.volume : product.volume;
+    
     addItem({
       productId: product.id,
       name: productName,
-      price: product.price,
+      price: price,
       image: primaryImage,
+      volume: volume,
     });
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
+    const firstVariant = product.variants?.[0];
+    const price = firstVariant ? firstVariant.price : product.price;
+    const volume = firstVariant ? firstVariant.volume : product.volume;
+    const itemId = `${product.id}-${volume || 'default'}`;
+    
     if (inWishlist) {
-      removeFromWishlist(product.id);
+      removeFromWishlist(itemId);
     } else {
       addToWishlist({
         productId: product.id,
         name: productName,
-        price: product.price,
+        price: price,
         image: primaryImage,
+        volume: volume,
       });
     }
   };
 
-  const discount = product.originalPrice
+  const discount = product.variants && product.variants.length > 0 && product.variants[0].originalPrice
+    ? Math.round(((product.variants[0].originalPrice - product.variants[0].price) / product.variants[0].originalPrice) * 100)
+    : product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
@@ -111,13 +127,33 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
           
           <div className="flex flex-wrap items-baseline gap-2 mt-2">
-            <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
-              {product.price.toFixed(2)} ₼
-            </span>
-            {product.originalPrice && (
-              <span className="text-sm text-gray-400 line-through decoration-red-400 whitespace-nowrap">
-                {product.originalPrice.toFixed(2)} ₼
-              </span>
+            {product.variants && product.variants.length > 0 ? (
+              <>
+                <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
+                  {product.variants[0].price.toFixed(2)} ₼
+                </span>
+                {product.variants[0].originalPrice && (
+                  <span className="text-sm text-gray-400 line-through decoration-red-400 whitespace-nowrap">
+                    {product.variants[0].originalPrice.toFixed(2)} ₼
+                  </span>
+                )}
+                {product.variants.length > 1 && (
+                  <span className="text-xs text-gray-500">
+                    +{product.variants.length - 1} həcm
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
+                <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
+                  {product.price.toFixed(2)} ₼
+                </span>
+                {product.originalPrice && (
+                  <span className="text-sm text-gray-400 line-through decoration-red-400 whitespace-nowrap">
+                    {product.originalPrice.toFixed(2)} ₼
+                  </span>
+                )}
+              </>
             )}
           </div>
         </div>

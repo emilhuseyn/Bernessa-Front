@@ -52,7 +52,10 @@ export const CartPage: React.FC = () => {
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     <div className="flex gap-6">
-                      <div className="w-32 h-32 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                      <div 
+                        className="w-32 h-32 rounded-xl overflow-hidden bg-gray-100 shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all"
+                        onClick={() => navigate(`/product/${item.productId}`)}
+                      >
                         <img
                           src={item.image}
                           alt={item.name}
@@ -63,7 +66,12 @@ export const CartPage: React.FC = () => {
                       <div className="flex-1 flex flex-col justify-between py-1">
                         <div>
                           <div className="flex justify-between items-start">
-                            <h3 className="text-xl font-bold text-gray-900 mb-1">{item.name}</h3>
+                            <h3 
+                              className="text-xl font-bold text-gray-900 mb-1 cursor-pointer hover:text-primary-600 transition-colors"
+                              onClick={() => navigate(`/product/${item.productId}`)}
+                            >
+                              {item.name}
+                            </h3>
                             <button
                               onClick={() => removeItem(item.id)}
                               className="text-gray-400 hover:text-red-500 transition-colors p-1"
@@ -75,6 +83,7 @@ export const CartPage: React.FC = () => {
                           </div>
                           
                           <div className="flex gap-3 text-sm text-gray-500 mb-4">
+                            {item.volume && <span className="bg-gray-100 px-2 py-1 rounded-md">Həcm: {item.volume}</span>}
                             {item.size && <span className="bg-gray-100 px-2 py-1 rounded-md">{t('cart.size')}: {item.size}</span>}
                             {item.color && <span className="bg-gray-100 px-2 py-1 rounded-md">{t('cart.color')}: {item.color}</span>}
                           </div>

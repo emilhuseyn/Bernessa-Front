@@ -27,7 +27,7 @@ export const useCartStore = create<CartStore>()(
 
       addItem: (newItem) => {
         const items = get().items;
-        const itemId = `${newItem.productId}-${newItem.size || ''}-${newItem.color || ''}`;
+        const itemId = `${newItem.productId}-${newItem.volume || 'default'}-${newItem.size || ''}-${newItem.color || ''}`;
         const existingItem = items.find(item => item.id === itemId);
 
         let updatedItems;

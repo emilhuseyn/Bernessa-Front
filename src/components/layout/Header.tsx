@@ -44,8 +44,14 @@ export const Header: React.FC = () => {
       <div className="container-custom relative">
         <div className="flex items-center h-14 gap-2 md:gap-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center group flex-shrink-0">
-            <div className="flex flex-col items-center">
+          <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
+            <img 
+              src="/image.png" 
+              alt="Barsense Logo" 
+              className="w-8 h-8 sm:w-10 sm:h-10 object-contain group-hover:scale-110 transition-transform"
+              style={{ filter: 'brightness(0) invert(1)' }}
+            />
+            <div className="flex flex-col">
               <span className="text-lg sm:text-[1.6rem] font-bold text-white tracking-tight leading-none group-hover:text-primary-400 transition-colors" style={{ fontFamily: 'Deca Serif, serif' }}>BARSENSE</span>
               <span className="text-[8px] sm:text-[10px] text-gray-400 tracking-widest uppercase font-medium hidden xs:block">Luxury Perfumes</span>
             </div>

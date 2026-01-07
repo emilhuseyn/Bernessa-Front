@@ -2,26 +2,31 @@ import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from '
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiUpload, FiRefreshCw } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import AdminLayout from '../../components/admin/AdminLayout';
-import { categoryService, productService, type CreateProductDTO, type UpdateProductDTO } from '../../services';
-import type { Category, Product } from '../../types';
+import { categoryService, productService, brandService, type CreateProductDTO, type UpdateProductDTO, type ProductVariantDTO } from '../../services';
+import type { Category, Product, Brand } from '../../types';
 import { handleApiError } from '../../utils/errorHandler';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useCartStore } from '../../store/cartStore';
 import { useWishlistStore } from '../../store/wishlistStore';
 import { debouncedTranslate } from '../../utils/translateText';
 
+interface ProductVariant {
+  volume: string;
+  price: string;
+  originalPrice: string;
+  isActive: boolean;
+}
+
 interface ProductFormState {
   name: string;
   brand: string;
-  price: string;
-  originalPrice: string;
-  volume: string;
   type: string;
   description: string;
   categoryId: string;
   isActive: boolean;
   isFeatured: boolean;
   images: File[];
+  variants: ProductVariant[];
   nameEn: string;
   nameRu: string;
   typeEn: string;
@@ -37,15 +42,13 @@ const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/600x800?text=M%C9%99hsul'
 const createInitialFormState = (): ProductFormState => ({
   name: '',
   brand: '',
-  price: '',
-  originalPrice: '',
-  volume: '',
   type: '',
   description: '',
   categoryId: '',
   isActive: true,
   isFeatured: false,
   images: [],
+  variants: [{ volume: '', price: '', originalPrice: '', isActive: true }],
   nameEn: '',
   nameRu: '',
   typeEn: '',
@@ -64,6 +67,7 @@ const resolveImageUrl = (url: string): string => {
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isLoading, setIsLoading] = useState(false);
@@ -87,9 +91,10 @@ export default function AdminProducts() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [productsResponse, categoriesResponse] = await Promise.all([
+      const [productsResponse, categoriesResponse, brandsResponse] = await Promise.all([
         productService.getAll({ includeInactive: true }),
         categoryService.getAll(),
+        brandService.getAll(),
       ]);
 
       const normalizedCategories = categoriesResponse.map((category) => ({
@@ -98,6 +103,7 @@ export default function AdminProducts() {
       })) as Category[];
 
       setCategories(normalizedCategories);
+      setBrands(brandsResponse);
       setProducts(productsResponse);
     } catch (error) {
       const message = handleApiError(error);
@@ -169,18 +175,32 @@ export default function AdminProducts() {
   const handleOpenModal = (product?: Product) => {
     if (product) {
       setEditingProduct(product);
+      
+      // Create variants from product data
+      const variants = product.variants && product.variants.length > 0
+        ? product.variants.map(v => ({
+            volume: v.volume || '',
+            price: String(v.price || 0),
+            originalPrice: v.originalPrice != null ? String(v.originalPrice) : '',
+            isActive: v.isActive ?? true
+          }))
+        : product.price ? [{
+            volume: product.volume ?? '',
+            price: String(product.price),
+            originalPrice: product.originalPrice != null ? String(product.originalPrice) : '',
+            isActive: true
+          }] : [{ volume: '', price: '', originalPrice: '', isActive: true }];
+      
       setFormState({
         name: product.name ?? '',
-        brand: product.brand ?? '',
-        price: product.price != null ? String(product.price) : '',
-        originalPrice: product.originalPrice != null ? String(product.originalPrice) : '',
-        volume: product.volume ?? '',
+        brand: product.brandId ? String(product.brandId) : (product.brand ?? ''),
         type: product.type ?? '',
         description: product.description ?? '',
         categoryId: product.categoryId ?? '',
         isActive: product.isActive ?? true,
         isFeatured: product.isFeatured ?? false,
         images: [],
+        variants: variants,
         nameEn: product.translations?.en?.name ?? '',
         nameRu: product.translations?.ru?.name ?? '',
         typeEn: product.translations?.en?.type ?? '',
@@ -253,6 +273,7 @@ export default function AdminProducts() {
 
   const handleSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = event.target;
+    console.log(`Select changed - ${name}:`, value, typeof value);
     setFormState((prev) => ({
       ...prev,
       [name]: value,
@@ -267,6 +288,29 @@ export default function AdminProducts() {
     setImagePreviews(previews);
   };
 
+  const handleAddVariant = () => {
+    setFormState((prev) => ({
+      ...prev,
+      variants: [...prev.variants, { volume: '', price: '', originalPrice: '', isActive: true }],
+    }));
+  };
+
+  const handleRemoveVariant = (index: number) => {
+    setFormState((prev) => ({
+      ...prev,
+      variants: prev.variants.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleVariantChange = (index: number, field: keyof ProductVariant, value: string | boolean) => {
+    setFormState((prev) => ({
+      ...prev,
+      variants: prev.variants.map((variant, i) =>
+        i === index ? { ...variant, [field]: value } : variant
+      ),
+    }));
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -276,13 +320,8 @@ export default function AdminProducts() {
       return;
     }
 
-    if (!formState.brand.trim()) {
-      toast.error('Brend daxil edilməlidir');
-      return;
-    }
-
-    if (!formState.volume.trim()) {
-      toast.error('Həcm daxil edilməlidir');
+    if (!formState.brand) {
+      toast.error('Brend seçilməlidir');
       return;
     }
 
@@ -296,10 +335,22 @@ export default function AdminProducts() {
       return;
     }
 
-    const price = Number(formState.price);
-    if (!formState.price.trim() || Number.isNaN(price) || price <= 0) {
-      toast.error('Etibarlı qiymət daxil edin');
+    if (!formState.variants || formState.variants.length === 0) {
+      toast.error('Ən azı bir variant əlavə edilməlidir');
       return;
+    }
+
+    // Validate variants
+    for (let i = 0; i < formState.variants.length; i++) {
+      const variant = formState.variants[i];
+      if (!variant.volume.trim()) {
+        toast.error(`Variant ${i + 1}: Həcm daxil edilməlidir`);
+        return;
+      }
+      if (!variant.price || parseFloat(variant.price) <= 0) {
+        toast.error(`Variant ${i + 1}: Düzgün qiymət daxil edilməlidir`);
+        return;
+      }
     }
 
     if (!formState.categoryId) {
@@ -350,18 +401,36 @@ export default function AdminProducts() {
       return;
     }
 
+    const brandIdNumber = Number(formState.brand);
+    console.log('=== BRAND DEBUG ===');
+    console.log('formState.brand:', formState.brand, typeof formState.brand);
+    console.log('brandIdNumber:', brandIdNumber);
+    console.log('Available brands:', brands);
+    console.log('==================');
+    
+    if (!brandIdNumber || Number.isNaN(brandIdNumber)) {
+      toast.error('Brend düzgün seçilməyib');
+      return;
+    }
+
+    // Convert variants to DTO format
+    const variants = formState.variants.map(v => ({
+      volume: v.volume.trim(),
+      price: parseFloat(v.price),
+      originalPrice: v.originalPrice ? parseFloat(v.originalPrice) : undefined,
+      isActive: v.isActive
+    }));
+
     const payloadBase: CreateProductDTO = {
       name: formState.name.trim(),
-      brand: formState.brand.trim(),
-      price,
-      originalPrice: formState.originalPrice ? Number(formState.originalPrice) : undefined,
-      volume: formState.volume.trim(),
+      brandId: brandIdNumber,
       type: formState.type.trim(),
       description: formState.description.trim(),
       categoryId: categoryIdNumber,
       isActive: formState.isActive,
       isFeatured: formState.isFeatured,
       images: formState.images.length ? formState.images : undefined,
+      variants: variants,
       nameEn: formState.nameEn.trim(),
       nameRu: formState.nameRu.trim(),
       typeEn: formState.typeEn.trim(),
@@ -550,12 +619,21 @@ export default function AdminProducts() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{product.category || '—'}</td>
                       <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-gray-900 dark:text-white">{product.price.toFixed(2)} ₼</span>
-                          {product.originalPrice && (
-                            <span className="text-xs text-gray-400 dark:text-gray-500 line-through">
-                              {product.originalPrice.toFixed(2)} ₼
-                            </span>
+                        <div className="flex flex-col gap-1">
+                          {product.volume && product.price ? (
+                            <>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">{product.volume}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-gray-900 dark:text-white">{product.price.toFixed(2)} ₼</span>
+                                {product.originalPrice && (
+                                  <span className="text-xs text-gray-400 dark:text-gray-500 line-through">
+                                    {product.originalPrice.toFixed(2)} ₼
+                                  </span>
+                                )}
+                              </div>
+                            </>
+                          ) : (
+                            <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
                           )}
                         </div>
                       </td>
@@ -644,51 +722,90 @@ export default function AdminProducts() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Brend *</label>
-                  <input
-                    type="text"
+                  <select
                     name="brand"
                     value={formState.brand}
-                    onChange={handleInputChange}
+                    onChange={handleSelectChange}
                     required
                     className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/10"
-                  />
+                  >
+                    <option value="">Brend seçin</option>
+                    {brands.map((brand) => (
+                      <option key={brand.id} value={brand.id}>
+                        {brand.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Qiymət (₼) *</label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formState.price}
-                    onChange={handleInputChange}
-                    min="0"
-                    step="0.01"
-                    required
-                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/10"
-                  />
+
+                {/* Variants Section */}
+                <div className="col-span-2">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Variantlar (Həcm və Qiymətlər) *</label>
+                    <button
+                      type="button"
+                      onClick={handleAddVariant}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                    >
+                      <FiPlus className="w-4 h-4" />
+                      Variant əlavə et
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {formState.variants.map((variant, index) => (
+                      <div key={index} className="flex gap-3 items-start p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                        <div className="flex-1 grid grid-cols-3 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Həcm</label>
+                            <input
+                              type="text"
+                              value={variant.volume}
+                              onChange={(e) => handleVariantChange(index, 'volume', e.target.value)}
+                              placeholder="50ml"
+                              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Qiymət (₼)</label>
+                            <input
+                              type="number"
+                              value={variant.price}
+                              onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
+                              placeholder="100"
+                              min="0"
+                              step="0.01"
+                              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Əvvəlki qiymət (₼)</label>
+                            <input
+                              type="number"
+                              value={variant.originalPrice}
+                              onChange={(e) => handleVariantChange(index, 'originalPrice', e.target.value)}
+                              placeholder="150"
+                              min="0"
+                              step="0.01"
+                              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                            />
+                          </div>
+                        </div>
+                        {formState.variants.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveVariant(index)}
+                            className="mt-6 p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            title="Sil"
+                          >
+                            <FiTrash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Əvvəlki qiymət (₼)</label>
-                  <input
-                    type="number"
-                    name="originalPrice"
-                    value={formState.originalPrice}
-                    onChange={handleInputChange}
-                    min="0"
-                    step="0.01"
-                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/10"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Həcm *</label>
-                  <input
-                    type="text"
-                    name="volume"
-                    value={formState.volume}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-100/10"
-                  />
-                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ətir növü *</label>
                   <input

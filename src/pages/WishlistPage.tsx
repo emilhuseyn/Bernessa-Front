@@ -19,8 +19,9 @@ export const WishlistPage: React.FC = () => {
       name: item.name,
       price: item.price,
       image: item.image,
+      volume: item.volume,
     });
-    removeItem(item.productId);
+    removeItem(item.id);
   };
 
   if (items.length === 0) {
@@ -86,7 +87,7 @@ export const WishlistPage: React.FC = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <button
-                      onClick={() => removeItem(item.productId)}
+                      onClick={() => removeItem(item.id)}
                       className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition-all duration-300 group/btn"
                     >
                       <svg className="w-5 h-5 text-red-500 group-hover/btn:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,6 +103,9 @@ export const WishlistPage: React.FC = () => {
                     >
                       {item.name}
                     </h3>
+                    {item.volume && (
+                      <p className="text-sm text-gray-500 mb-2">Həcm: {item.volume}</p>
+                    )}
                     <p className="text-2xl font-bold text-gray-900 mb-4">
                       {item.price.toFixed(2)} ₼
                     </p>

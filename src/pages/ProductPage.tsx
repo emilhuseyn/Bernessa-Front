@@ -20,12 +20,16 @@ export const ProductPage: React.FC = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [category, setCategory] = useState<Category | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isRelatedLoading, setIsRelatedLoading] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore();
-  const inWishlist = product ? isInWishlist(product.id) : false;
+  
+  const selectedVariant = product?.variants?.[selectedVariantIndex];
+  const selectedVolume = selectedVariant ? selectedVariant.volume : product?.volume;
+  const inWishlist = product ? isInWishlist(product.id, selectedVolume) : false;
 
   // Get translated content
   const productName = useMemo(() => {
@@ -135,34 +139,51 @@ export const ProductPage: React.FC = () => {
   const handleAddToCart = () => {
     if (!product) return;
 
+    const selectedVariant = product.variants?.[selectedVariantIndex];
+    const price = selectedVariant ? selectedVariant.price : product.price;
+    const volume = selectedVariant ? selectedVariant.volume : product.volume;
+
     addItem({
       productId: product.id,
       name: productName,
-      price: product.price,
+      price: price,
       image: product.images?.[0] || '',
       quantity,
+      volume: volume,
     });
     navigate('/cart');
   };
 
   const handleToggleWishlist = () => {
     if (!product) return;
+    
+    const selectedVariant = product.variants?.[selectedVariantIndex];
+    const price = selectedVariant ? selectedVariant.price : product.price;
+    const volume = selectedVariant ? selectedVariant.volume : product.volume;
+    const itemId = `${product.id}-${volume || 'default'}`;
+    
     if (inWishlist) {
-      removeFromWishlist(product.id);
+      removeFromWishlist(itemId);
     } else {
       addToWishlist({
         productId: product.id,
         name: productName,
-        price: product.price,
+        price: price,
         image: product.images?.[0] || '',
+        volume: volume,
       });
     }
   };
 
   const discount = useMemo(() => {
-    if (!product?.originalPrice) return 0;
-    return Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
-  }, [product]);
+    if (!product) return 0;
+    const selectedVariant = product.variants?.[selectedVariantIndex];
+    const currentPrice = selectedVariant ? selectedVariant.price : product.price;
+    const originalPrice = selectedVariant?.originalPrice ?? product.originalPrice;
+    
+    if (!originalPrice) return 0;
+    return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+  }, [product, selectedVariantIndex]);
 
   if (isLoading) {
     return (
@@ -235,6 +256,30 @@ export const ProductPage: React.FC = () => {
                       -{discount}% {t('product.sale')}
                     </div>
                   )}
+                  
+                  {/* Navigation Buttons */}
+                  {product.images.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => setSelectedImage((prev) => (prev === 0 ? product.images.length - 1 : prev - 1))}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110"
+                        aria-label="Previous image"
+                      >
+                        <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => setSelectedImage((prev) => (prev === product.images.length - 1 ? 0 : prev + 1))}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110"
+                        aria-label="Next image"
+                      >
+                        <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
                 </div>
                 
                 {product.images.length > 1 && (
@@ -274,7 +319,11 @@ export const ProductPage: React.FC = () => {
                             {product.brand}
                           </span>
                         )}
-                        {product.volume && (
+                        {product.variants && product.variants.length > 0 ? (
+                          <span className="text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full bg-gray-100 text-gray-700">
+                            {product.variants[selectedVariantIndex].volume}
+                          </span>
+                        ) : product.volume && (
                           <span className="text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full bg-gray-100 text-gray-700">
                             {product.volume}
                           </span>
@@ -284,13 +333,28 @@ export const ProductPage: React.FC = () => {
                   </div>
 
                   <div className="flex flex-wrap items-baseline gap-2 sm:gap-4 mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-gray-100">
-                    <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700 whitespace-nowrap">
-                      {product.price.toFixed(2)} ₼
-                    </span>
-                    {product.originalPrice && (
-                      <span className="text-lg sm:text-xl lg:text-2xl text-gray-400 line-through decoration-2 whitespace-nowrap">
-                        {product.originalPrice.toFixed(2)} ₼
-                      </span>
+                    {product.variants && product.variants.length > 0 ? (
+                      <>
+                        <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700 whitespace-nowrap">
+                          {product.variants[selectedVariantIndex].price.toFixed(2)} ₼
+                        </span>
+                        {product.variants[selectedVariantIndex].originalPrice && (
+                          <span className="text-lg sm:text-xl lg:text-2xl text-gray-400 line-through decoration-2 whitespace-nowrap">
+                            {product.variants[selectedVariantIndex].originalPrice.toFixed(2)} ₼
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-700 whitespace-nowrap">
+                          {product.price.toFixed(2)} ₼
+                        </span>
+                        {product.originalPrice && (
+                          <span className="text-lg sm:text-xl lg:text-2xl text-gray-400 line-through decoration-2 whitespace-nowrap">
+                            {product.originalPrice.toFixed(2)} ₼
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
 
@@ -300,6 +364,41 @@ export const ProductPage: React.FC = () => {
 
                   {/* Selectors */}
                   <div className="space-y-6 sm:space-y-8 mb-8 sm:mb-10">
+                    {/* Variant Selector */}
+                    {product.variants && product.variants.length > 0 && (
+                      <div>
+                        <label className="block text-xs sm:text-sm font-bold text-gray-900 mb-3 sm:mb-4 uppercase tracking-wider">
+                          Həcm
+                        </label>
+                        <div className="flex flex-wrap gap-3">
+                          {product.variants.map((variant, index) => (
+                            <button
+                              key={index}
+                              onClick={() => setSelectedVariantIndex(index)}
+                              className={`px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-medium transition-all ${
+                                selectedVariantIndex === index
+                                  ? 'bg-gray-900 text-white shadow-lg scale-105'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              <div className="text-sm sm:text-base font-bold">{variant.volume}</div>
+                              <div className="text-xs sm:text-sm mt-1">
+                                {variant.originalPrice ? (
+                                  <>
+                                    <span className="line-through opacity-60">{variant.originalPrice.toFixed(0)} ₼</span>
+                                    {' '}
+                                    <span>{variant.price.toFixed(0)} ₼</span>
+                                  </>
+                                ) : (
+                                  <span>{variant.price.toFixed(0)} ₼</span>
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div>
                       <label className="block text-xs sm:text-sm font-bold text-gray-900 mb-3 sm:mb-4 uppercase tracking-wider">
                         Miqdar

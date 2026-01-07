@@ -4,6 +4,14 @@ export interface ProductTranslation {
   description: string;
 }
 
+export interface ProductVariant {
+  id?: number;
+  volume: string;
+  price: number;
+  originalPrice?: number | null;
+  isActive?: boolean;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -19,13 +27,18 @@ export interface Product {
   categoryName?: string;
   volume?: string;
   brand?: string;
+  brandId?: number;
+  brandName?: string;
   type?: string;
   tags?: string[];
   isActive?: boolean;
   isFeatured?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  createdOn?: string;
+  updatedOn?: string;
   translations?: Record<string, ProductTranslation>;
+  variants?: ProductVariant[];
 }
 
 export interface CartItem {
@@ -37,6 +50,7 @@ export interface CartItem {
   quantity: number;
   size?: string;
   color?: string;
+  volume?: string;
 }
 
 export interface Cart {
@@ -137,6 +151,30 @@ export interface Category {
   translations?: Record<string, string>;
 }
 
+export interface Brand {
+  id: number;
+  name: string;
+  logo: string;
+  logoUrl?: string;
+  createdBy?: string;
+  createdOn?: string;
+  updatedBy?: string;
+  updatedOn?: string;
+  isDeleted?: boolean;
+  productCount?: number;
+}
+
+export interface CreateBrandDTO {
+  name: string;
+  logo?: File;
+}
+
+export interface UpdateBrandDTO {
+  id: number;
+  name: string;
+  logo?: File;
+}
+
 export interface Filter {
   priceRange: [number, number];
   sizes: string[];
@@ -147,4 +185,64 @@ export interface Filter {
 export interface SortOption {
   value: string;
   label: string;
+}
+
+export interface ContactSettingTranslation {
+  languageCode: string;
+  supportDescription?: string;
+  workingHoursWeekdays?: string;
+  workingHoursSaturday?: string;
+  workingHoursSunday?: string;
+}
+
+export interface ContactSetting {
+  id: number;
+  address: string;
+  email: string;
+  phone: string;
+  whatsApp?: string;
+  instagram?: string;
+  workingHoursWeekdays?: string;
+  workingHoursSaturday?: string;
+  workingHoursSunday?: string;
+  supportDescription?: string;
+  contactImage?: string;
+  latitude?: string;
+  longitude?: string;
+  facebookUrl?: string;
+  twitterUrl?: string;
+  linkedInUrl?: string;
+  youTubeUrl?: string;
+  createdOn: string;
+  updatedOn: string;
+  translations?: ContactSettingTranslation[] | Record<string, ContactSettingTranslation>;
+}
+
+export interface CreateContactSettingDTO {
+  address: string;
+  email: string;
+  phone: string;
+  whatsApp?: string;
+  instagram?: string;
+  workingHoursWeekdays?: string;
+  workingHoursSaturday?: string;
+  workingHoursSunday?: string;
+  supportDescription?: string;
+  contactImage?: File;
+  latitude?: string;
+  longitude?: string;
+  facebookUrl?: string;
+  twitterUrl?: string;
+  linkedInUrl?: string;
+  youTubeUrl?: string;
+  // English Translations
+  supportDescriptionEn?: string;
+  workingHoursWeekdaysEn?: string;
+  workingHoursSaturdayEn?: string;
+  workingHoursSundayEn?: string;
+  // Russian Translations
+  supportDescriptionRu?: string;
+  workingHoursWeekdaysRu?: string;
+  workingHoursSaturdayRu?: string;
+  workingHoursSundayRu?: string;
 }

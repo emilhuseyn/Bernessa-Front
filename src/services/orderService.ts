@@ -13,6 +13,8 @@ type RawOrderItem = {
   ProductBrand?: string;
   productVolume?: string;
   ProductVolume?: string;
+  variantVolume?: string;
+  VariantVolume?: string;
   name?: string;
   Name?: string;
   quantity?: number;
@@ -108,12 +110,15 @@ const normalizeOrderItem = (raw: RawOrderItem, fallbackIndex: number) => {
   const productId = coalesce(raw.productId, raw.ProductId, raw.id, raw.Id);
   const quantity = toNumber(coalesce(raw.quantity, raw.Quantity)) ?? 1;
   const price = toNumber(coalesce(raw.price, raw.Price, raw.unitPrice, raw.UnitPrice));
+  const volume = coalesce(raw.productVolume, raw.ProductVolume, raw.variantVolume, raw.VariantVolume);
+  
   return {
     id: String(id ?? fallbackIndex),
     productId: productId != null ? String(productId) : undefined,
     name: coalesce(raw.productName, raw.ProductName, raw.name, raw.Name),
     quantity,
     price,
+    volume,
     imageUrl: resolveMediaUrl(
       coalesce(raw.productImage, raw.ProductImage, raw.imageUrl, raw.ImageUrl, raw.image, raw.Image)
     ),
@@ -248,7 +253,7 @@ export interface CreateOrderDTO {
   customerPhone: string;
   shippingAddress: string;
   customerNote?: string;
-  items: Array<{ productId: number; quantity: number }>;
+  items: Array<{ productId: number; quantity: number; volume?: string }>;
   paymentMethod: PaymentMethod;
   discountCode?: string;
 }
@@ -270,6 +275,7 @@ export const orderService = {
       Items: data.items.map((item) => ({
         ProductId: item.productId,
         Quantity: item.quantity,
+        VariantVolume: item.volume,
       })),
     };
 

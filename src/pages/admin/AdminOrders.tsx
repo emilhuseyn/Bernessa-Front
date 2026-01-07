@@ -496,7 +496,10 @@ export default function AdminOrders() {
                       <div className="flex flex-1 flex-col justify-between">
                         <div>
                           <p className="text-sm font-semibold text-gray-900 dark:text-white">{item.name ?? 'Məhsul'}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">ID: {item.productId ?? 'N/A'}</p>
+                          <div className="flex gap-2 mt-1">
+                            {item.volume && <p className="text-xs text-gray-500 dark:text-gray-400">Həcm: {item.volume}</p>}
+                            <p className="text-xs text-gray-500 dark:text-gray-400">ID: {item.productId ?? 'N/A'}</p>
+                          </div>
                         </div>
                         <div className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
                           <span>Miqdar: {item.quantity}</span>

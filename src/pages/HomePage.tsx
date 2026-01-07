@@ -5,9 +5,9 @@ import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
 import { ProductCard } from '../components/product/ProductCard';
 import { CategoryCard } from '../components/category/CategoryCard';
-import { categoryService, productService } from '../services';
+import { categoryService, productService, brandService, contactSettingService } from '../services';
 import { products as mockProducts, categories as mockCategories } from '../data/mockData';
-import type { Category, Product } from '../types';
+import type { Category, Product, Brand, ContactSetting } from '../types';
 import { handleApiError } from '../utils/errorHandler';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -17,12 +17,14 @@ export const HomePage: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [featuredLoading, setFeaturedLoading] = useState(true);
-  const [dealsProducts, setDealsProducts] = useState<Product[]>([]);
-  const [dealsLoading, setDealsLoading] = useState(true);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [brandsLoading, setBrandsLoading] = useState(true);
+  const [contactSettings, setContactSettings] = useState<ContactSetting | null>(null);
   const allProductsRef = useRef<Product[] | null>(null);
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5034/api';
   const mediaBaseUrl = apiBaseUrl.replace(/\/?api\/?$/, '');
   const fallbackDealImage = 'https://via.placeholder.com/400x500?text=Endirimli+M%C9%99hsul';
+  const fallbackHeroImage = 'https://images.unsplash.com/photo-1541643600914-78b084683601?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
 
   const sanitizeMediaPath = (value: string) =>
     value
@@ -75,7 +77,7 @@ export const HomePage: React.FC = () => {
     const fetchData = async () => {
       setCategoriesLoading(true);
       setFeaturedLoading(true);
-      setDealsLoading(true);
+      setBrandsLoading(true);
 
       try {
         const categoriesData = await categoryService.getAll();
@@ -120,39 +122,26 @@ export const HomePage: React.FC = () => {
       }
 
       try {
-        let dealsData = await productService.getDeals();
-
-        if (!dealsData || dealsData.length === 0) {
-          try {
-            const allProducts = await ensureAllProducts();
-            const topDiscounts = computeTopDiscounts(allProducts, 4);
-            dealsData = (topDiscounts.length > 0 ? topDiscounts : allProducts.slice(0, 4)).slice(0, 4);
-          } catch (fallbackError) {
-            const message = handleApiError(fallbackError);
-            if (message && message !== 'Məlumat tapılmadı') {
-              toast.error(message);
-            }
-            let fallbackDeals = computeTopDiscounts(mockProducts, 4);
-            if (fallbackDeals.length === 0) {
-              fallbackDeals = mockProducts.slice(0, 4);
-            }
-            dealsData = fallbackDeals;
-          }
-        }
-
-        setDealsProducts(dealsData.slice(0, 4));
-      } catch (dealsError) {
-        const message = handleApiError(dealsError);
+        const brandsData = await brandService.getAll();
+        setBrands(brandsData.slice(0, 8));
+      } catch (brandsError) {
+        const message = handleApiError(brandsError);
         if (message && message !== 'Məlumat tapılmadı') {
           toast.error(message);
         }
-        let fallbackDeals = computeTopDiscounts(mockProducts, 4);
-        if (fallbackDeals.length === 0) {
-          fallbackDeals = mockProducts.slice(0, 4);
-        }
-        setDealsProducts(fallbackDeals);
+        setBrands([]);
       } finally {
-        setDealsLoading(false);
+        setBrandsLoading(false);
+      }
+
+      // Fetch contact settings for hero image
+      try {
+        const contactData = await contactSettingService.getActiveContactSetting();
+        if (contactData) {
+          setContactSettings(contactData);
+        }
+      } catch (error) {
+        console.error('Error fetching contact settings:', error);
       }
     };
 
@@ -178,12 +167,12 @@ export const HomePage: React.FC = () => {
                   <span className="text-sm font-medium text-gray-600">{t('home.hero.badge')}</span>
                 </div>
                 
-                <h1 className="text-6xl lg:text-7xl font-display font-bold leading-[1.1] text-gray-900">
+                <h1 className="text-6xl lg:text-7xl font-display font-bold leading-[1.3] text-gray-900 pb-4 overflow-visible">
                   <span className="inline-block animate-float">{t('home.hero.title')}</span> <br/>
-                  <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600 animate-float">{t('home.hero.titleAccent')}</span>
+                  <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600 animate-float pb-3 mb-2">{t('home.hero.titleAccent')}</span>
                 </h1>
                 
-                <p className="text-xl text-gray-600 max-w-lg leading-relaxed">
+                <p className="text-xl text-gray-600 max-w-lg leading-relaxed mt-4">
                   {t('home.hero.subtitle')}
                 </p>
                 
@@ -213,7 +202,7 @@ export const HomePage: React.FC = () => {
               <div className="relative hidden lg:block">
                 <div className="relative z-10 animate-float">
                   <img 
-                    src="https://images.unsplash.com/photo-1541643600914-78b084683601?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+                    src={contactSettings?.contactImage ? `${mediaBaseUrl}${contactSettings.contactImage}` : fallbackHeroImage}
                     alt="Luxury Perfume" 
                     className="rounded-[2.5rem] shadow-2xl w-full max-w-md mx-auto object-cover aspect-[3/4]"
                   />
@@ -281,39 +270,49 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* Flash Sale Banner */}
-        <section className="text-white relative overflow-hidden" style={{ backgroundColor: '#111827' }}>
-          <div className="container-custom py-12 relative z-10">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              <div>
-                <h2 className="text-3xl font-bold mb-2 drop-shadow-lg">{t('home.deals.flashSale')}</h2>
-                <p className="text-lg text-gray-300 drop-shadow">{t('home.deals.upTo50')}</p>
-              </div>
-              <Link to="/deals" className="self-start lg:self-auto">
-                <button className="bg-white text-gray-900 px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                  {t('home.deals.viewDeals')}
-                </button>
-              </Link>
-            </div>
-
-            <div className="mt-10">
-              {dealsLoading ? (
-                <div className="flex justify-center py-10">
-                  <div className="h-12 w-12 border-4 border-white/40 border-t-white rounded-full animate-spin" />
-                </div>
-              ) : dealsProducts.length > 0 ? (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  {dealsProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-3xl bg-white/10 p-10 text-center">
-                  <p className="text-sm font-medium text-white/80">{t('home.deals.noDeals')}</p>
-                </div>
-              )}
+        {/* Brands Section */}
+        <section className="container-custom py-16">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900">Brendlər</h2>
+              <p className="text-gray-600 mt-2">Məşhur brendləri kəşf edin</p>
             </div>
           </div>
+
+          {brandsLoading ? (
+            <div className="flex justify-center py-10">
+              <div className="h-12 w-12 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
+            </div>
+          ) : brands.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+              {brands.map((brand) => (
+                <div
+                  key={brand.id}
+                  className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-1 cursor-pointer"
+                >
+                  <div className="aspect-square w-full overflow-hidden bg-slate-50">
+                    <img
+                      src={`${mediaBaseUrl}/${brand.logo?.replace(/^\/+/, '')}`}
+                      alt={brand.name}
+                      className="h-full w-full object-contain p-4 transition-transform duration-300 group-hover:scale-110"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://via.placeholder.com/200x200?text=Logo';
+                      }}
+                    />
+                  </div>
+                  <div className="p-2 md:p-3 text-center">
+                    <h3 className="truncate text-xs md:text-sm font-semibold text-slate-900">
+                      {brand.name}
+                    </h3>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl bg-white border border-slate-200 p-10 text-center">
+              <p className="text-gray-600">Brend tapılmadı</p>
+            </div>
+          )}
         </section>
 
         {/* Featured Products */}

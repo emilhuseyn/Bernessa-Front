@@ -110,10 +110,12 @@ export const OrderConfirmationPage: FC = () => {
                 <h3 className="font-semibold mb-3">Sifarişə daxil olan məhsullar</h3>
                 <div className="space-y-3">
                   {orderItems.map((item) => (
-                    <div key={item.id} className="flex justify-between text-sm">
-                      <span>
-                        {item.name} × {item.quantity}
-                      </span>
+                    <div key={item.id} className="flex justify-between items-start text-sm">
+                      <div className="flex-1">
+                        <span className="font-medium">{item.name}</span>
+                        {item.volume && <span className="text-gray-500 ml-2">({item.volume})</span>}
+                        <span className="text-gray-500"> × {item.quantity}</span>
+                      </div>
                       <span className="font-medium">
                         {(typeof item.price === 'number' ? item.price * item.quantity : 0).toFixed(2)} AZN
                       </span>

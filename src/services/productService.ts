@@ -1,18 +1,23 @@
 import api from './api';
 import type { Product } from '../types';
 
+export interface ProductVariantDTO {
+  volume: string;
+  price: number;
+  originalPrice?: number;
+  isActive?: boolean;
+}
+
 export interface CreateProductDTO {
   name: string;
-  brand: string;
-  price: number;
-  originalPrice?: number | null;
-  volume: string;
+  brandId: number;
   type: string;
   description: string;
   categoryId: number;
   isActive?: boolean;
   isFeatured?: boolean;
   images?: File[];
+  variants: ProductVariantDTO[];
   nameEn?: string;
   nameRu?: string;
   typeEn?: string;
@@ -143,12 +148,36 @@ const normalizeProduct = (raw: any): Product => {
     raw.category?.name
   );
 
+  // Handle variants - normalize to match frontend structure
+  const variants = Array.isArray(raw.variants) 
+    ? raw.variants.map((v: any) => ({
+        id: v.id,
+        volume: v.volume || '',
+        price: Number(v.price) || 0,
+        originalPrice: v.originalPrice != null ? Number(v.originalPrice) : undefined,
+        isActive: typeof v.isActive === 'boolean' ? v.isActive : true,
+      }))
+    : undefined;
+
+  // For backward compatibility, if no variants but has price/volume, use those
+  const price = variants && variants.length > 0 
+    ? variants[0].price 
+    : (raw.price != null ? Number(raw.price) : 0);
+  
+  const originalPrice = variants && variants.length > 0
+    ? variants[0].originalPrice
+    : originalPriceValue;
+
+  const volume = variants && variants.length > 0
+    ? variants[0].volume
+    : (raw.volume || undefined);
+
   return {
     id,
     name: raw.name ?? '',
     description: raw.description ?? '',
-    price: raw.price != null ? Number(raw.price) : 0,
-    originalPrice: originalPriceValue,
+    price,
+    originalPrice,
     images: resolvedImages,
     imageUrls: Array.isArray(raw.imageUrls)
       ? (raw.imageUrls as unknown[])
@@ -159,14 +188,17 @@ const normalizeProduct = (raw: any): Product => {
     category: categoryName ?? '',
     categoryId: rawCategoryId != null ? String(rawCategoryId) : undefined,
     categoryName: categoryName ?? undefined,
-    volume: raw.volume || undefined,
-    brand: raw.brand || undefined,
+    volume,
+    brand: raw.brandName || raw.brand || undefined,
+    brandId: raw.brandId || undefined,
+    brandName: raw.brandName || undefined,
     type: raw.type || undefined,
     tags: Array.isArray(raw.tags) ? raw.tags : undefined,
     isActive: typeof raw.isActive === 'boolean' ? raw.isActive : undefined,
     isFeatured: typeof raw.isFeatured === 'boolean' ? raw.isFeatured : undefined,
-    createdAt: raw.createdAt || undefined,
-    updatedAt: raw.updatedAt || undefined,
+    createdAt: raw.createdAt || raw.createdOn || undefined,
+    updatedAt: raw.updatedAt || raw.updatedOn || undefined,
+    variants,
     translations: raw.translations ? {
       en: raw.translations.en || raw.translations.En || raw.translations.EN || (raw.nameEn ? {
         name: raw.nameEn,
@@ -205,10 +237,7 @@ const buildProductFormData = (data: Partial<CreateProductDTO>) => {
   };
 
   appendIfDefined('Name', data.name);
-  appendIfDefined('Brand', data.brand);
-  appendIfDefined('Price', data.price);
-  appendIfDefined('OriginalPrice', data.originalPrice);
-  appendIfDefined('Volume', data.volume);
+  appendIfDefined('BrandId', data.brandId);
   appendIfDefined('Type', data.type);
   appendIfDefined('Description', data.description);
   appendIfDefined('CategoryId', data.categoryId);
@@ -220,21 +249,26 @@ const buildProductFormData = (data: Partial<CreateProductDTO>) => {
   }
 
   // Add translation fields
-  console.log('Translation fields before sending:', {
-    nameEn: data.nameEn,
-    nameRu: data.nameRu,
-    typeEn: data.typeEn,
-    typeRu: data.typeRu,
-    descriptionEn: data.descriptionEn,
-    descriptionRu: data.descriptionRu
-  });
-  
   appendIfDefined('NameEn', data.nameEn);
   appendIfDefined('NameRu', data.nameRu);
   appendIfDefined('TypeEn', data.typeEn);
   appendIfDefined('TypeRu', data.typeRu);
   appendIfDefined('DescriptionEn', data.descriptionEn);
   appendIfDefined('DescriptionRu', data.descriptionRu);
+
+  // Add variants
+  if (Array.isArray(data.variants)) {
+    data.variants.forEach((variant, index) => {
+      appendIfDefined(`Variants[${index}].Volume`, variant.volume);
+      appendIfDefined(`Variants[${index}].Price`, variant.price);
+      if (variant.originalPrice !== undefined) {
+        appendIfDefined(`Variants[${index}].OriginalPrice`, variant.originalPrice);
+      }
+      if (typeof variant.isActive === 'boolean') {
+        appendIfDefined(`Variants[${index}].IsActive`, variant.isActive);
+      }
+    });
+  }
 
   if (Array.isArray(data.images)) {
     data.images.forEach((file) => {
