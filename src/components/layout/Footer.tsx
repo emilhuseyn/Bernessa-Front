@@ -59,6 +59,15 @@ export const Footer: React.FC = () => {
 
   
           <div className="lg:col-span-2">
+            <h3 className="text-white font-bold text-lg mb-6">{t('footer.categories')}</h3>
+            <ul className="space-y-4">
+              <li><Link to="/categories" className="text-gray-400 hover:text-primary-400 transition-colors">{t('header.categories')}</Link></li>
+              <li><Link to="/brands" className="text-gray-400 hover:text-primary-400 transition-colors">{t('brands.title')}</Link></li>
+              <li><Link to="/deals" className="text-gray-400 hover:text-primary-400 transition-colors">{t('header.deals')}</Link></li>
+            </ul>
+          </div>
+
+          <div className="lg:col-span-2">
             <h3 className="text-white font-bold text-lg mb-6">{t('footer.customerService')}</h3>
             <ul className="space-y-4">
               <li><Link to="/contact" className="text-gray-400 hover:text-primary-400 transition-colors">{t('footer.contact')}</Link></li>

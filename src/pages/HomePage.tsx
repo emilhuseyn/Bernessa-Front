@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Layout } from '../components/layout/Layout';
@@ -12,7 +12,7 @@ import { handleApiError } from '../utils/errorHandler';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const HomePage: React.FC = () => {
-  const { t, currentLanguage } = useTranslation();
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -23,32 +23,7 @@ export const HomePage: React.FC = () => {
   const allProductsRef = useRef<Product[] | null>(null);
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5034/api';
   const mediaBaseUrl = apiBaseUrl.replace(/\/?api\/?$/, '');
-  const fallbackDealImage = 'https://via.placeholder.com/400x500?text=Endirimli+M%C9%99hsul';
   const fallbackHeroImage = 'https://images.unsplash.com/photo-1541643600914-78b084683601?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
-
-  const sanitizeMediaPath = (value: string) =>
-    value
-      ? value.replace(/\\/g, '/').replace(/\/{2,}/g, '/').replace(/^\/+/, '')
-      : '';
-
-  const resolveProductImage = (product: Product) => {
-    const raw = product.images?.[0] || product.imageUrls?.[0] || '';
-
-    if (!raw) {
-      return fallbackDealImage;
-    }
-
-    if (/^https?:/i.test(raw)) {
-      return raw;
-    }
-
-    const normalized = sanitizeMediaPath(raw);
-    if (!normalized) {
-      return fallbackDealImage;
-    }
-
-    return `${mediaBaseUrl}/${normalized}`;
-  };
 
   const computeDiscount = (product: Product) => {
     if (!product.originalPrice || product.originalPrice <= product.price) {
@@ -146,6 +121,7 @@ export const HomePage: React.FC = () => {
     };
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -274,9 +250,23 @@ export const HomePage: React.FC = () => {
         <section className="container-custom py-16">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900">Brendlər</h2>
-              <p className="text-gray-600 mt-2">Məşhur brendləri kəşf edin</p>
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t('home.brands.title')}</h2>
+              <p className="text-gray-600 dark:text-slate-400 mt-2">{t('home.brands.subtitle')}</p>
             </div>
+            <Link
+              to="/brands"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-semibold flex items-center gap-2 group"
+            >
+              {t('home.brands.viewAll')}
+              <svg
+                className="w-5 h-5 transition-transform group-hover:translate-x-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
 
           {brandsLoading ? (
@@ -286,9 +276,10 @@ export const HomePage: React.FC = () => {
           ) : brands.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
               {brands.map((brand) => (
-                <div
+                <Link
                   key={brand.id}
-                  className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-1 cursor-pointer"
+                  to={`/brand/${brand.id}`}
+                  className="group relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-1 cursor-pointer"
                 >
                   <div className="aspect-square w-full overflow-hidden bg-slate-50">
                     <img
@@ -301,16 +292,16 @@ export const HomePage: React.FC = () => {
                     />
                   </div>
                   <div className="p-2 md:p-3 text-center">
-                    <h3 className="truncate text-xs md:text-sm font-semibold text-slate-900">
+                    <h3 className="truncate text-xs md:text-sm font-semibold text-slate-900 dark:text-white">
                       {brand.name}
                     </h3>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           ) : (
-            <div className="rounded-xl bg-white border border-slate-200 p-10 text-center">
-              <p className="text-gray-600">Brend tapılmadı</p>
+            <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-10 text-center">
+              <p className="text-gray-600 dark:text-slate-400">{t('home.brands.noBrands')}</p>
             </div>
           )}
         </section>

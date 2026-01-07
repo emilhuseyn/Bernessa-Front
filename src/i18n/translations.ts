@@ -104,6 +104,11 @@ export const translations = {
     'category.clearFilters': 'Filtrləri Təmizlə',
     'category.noCategoryProducts': 'kateqoriyası üçün hazırda məhsul əlavə olunmayıb.',
     
+    'home.brands.title': 'Brendlər',
+    'home.brands.subtitle': 'Məşhur brendləri kəşf edin',
+    'home.brands.viewAll': 'Hamısına Bax',
+    'home.brands.noBrands': 'Brend tapılmadı',
+    
     'home.featured.title': 'Seçilmiş Məhsullar',
     'home.featured.subtitle': 'Sizin üçün xüsusi seçilmişlər',
     'home.featured.viewAll': 'Hamısını Gör',
@@ -131,6 +136,19 @@ export const translations = {
     // Category Card
     'category.products': 'Məhsul',
     'category.explore': 'Kəşf et',
+
+    // Brand Card
+    'brand.viewProducts': 'Məhsullara bax',
+    'brand.badge': 'Brend',
+
+    // Brands Page
+    'brands.title': 'Brendlər',
+    'brands.description': 'Dünya brendlərinin lüks ətirləri və eksklüziv kolleksiyalar',
+    'brands.showing': 'Göstərilir',
+    'brands.brand': 'brend',
+    'brands.brands': 'brend',
+    'brands.noBrands': 'Heç bir brend tapılmadı',
+    'brands.noBrandsDescription': 'Brendlər tezliklə əlavə olunacaq',
 
     // Orders Page
     'orders.badge': 'Barsense',
@@ -428,6 +446,11 @@ export const translations = {
     'category.clearFilters': 'Clear Filters',
     'category.noCategoryProducts': 'category currently has no products.',
     
+    'home.brands.title': 'Brands',
+    'home.brands.subtitle': 'Discover popular brands',
+    'home.brands.viewAll': 'View All',
+    'home.brands.noBrands': 'No brands found',
+    
     'home.featured.title': 'Featured Products',
     'home.featured.subtitle': 'Specially selected for you',
     'home.featured.viewAll': 'View All',
@@ -455,6 +478,19 @@ export const translations = {
     // Category Card
     'category.products': 'Products',
     'category.explore': 'Explore',
+
+    // Brand Card
+    'brand.viewProducts': 'View Products',
+    'brand.badge': 'Brand',
+
+    // Brands Page
+    'brands.title': 'Brands',
+    'brands.description': 'Luxury perfumes from world brands and exclusive collections',
+    'brands.showing': 'Showing',
+    'brands.brand': 'brand',
+    'brands.brands': 'brands',
+    'brands.noBrands': 'No brands found',
+    'brands.noBrandsDescription': 'Brands will be added soon',
 
     // Orders Page
     'orders.badge': 'Barsense',
@@ -752,6 +788,11 @@ export const translations = {
     'category.clearFilters': 'Очистить фильтры',
     'category.noCategoryProducts': 'в категории в настоящее время нет товаров.',
     
+    'home.brands.title': 'Бренды',
+    'home.brands.subtitle': 'Откройте популярные бренды',
+    'home.brands.viewAll': 'Посмотреть все',
+    'home.brands.noBrands': 'Бренды не найдены',
+    
     'home.featured.title': 'Избранные товары',
     'home.featured.subtitle': 'Специально отобрано для вас',
     'home.featured.viewAll': 'Посмотреть все',
@@ -779,6 +820,19 @@ export const translations = {
     // Category Card
     'category.products': 'Товаров',
     'category.explore': 'Изучить',
+
+    // Brand Card
+    'brand.viewProducts': 'Посмотреть товары',
+    'brand.badge': 'Бренд',
+
+    // Brands Page
+    'brands.title': 'Бренды',
+    'brands.description': 'Роскошные духи мировых брендов и эксклюзивные коллекции',
+    'brands.showing': 'Показано',
+    'brands.brand': 'бренд',
+    'brands.brands': 'брендов',
+    'brands.noBrands': 'Бренды не найдены',
+    'brands.noBrandsDescription': 'Бренды будут добавлены скоро',
     
     // Categories Page
     'categories.catalogBadge': 'Каталог категорий',

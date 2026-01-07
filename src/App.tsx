@@ -11,6 +11,8 @@ import { ProfilePage } from './pages/ProfilePage';
 import { WishlistPage } from './pages/WishlistPage';
 import { SearchPage } from './pages/SearchPage';
 import CategoriesPage from './pages/CategoriesPage';
+import BrandsPage from './pages/BrandsPage';
+import BrandPage from './pages/BrandPage';
 import { DealsPage } from './pages/DealsPage';
 import { ContactPage } from './pages/ContactPage';
 import { ShippingPage } from './pages/ShippingPage';
@@ -83,6 +85,8 @@ function App() {
         <Route path="/category/:slug" element={<CategoryPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/brands" element={<BrandsPage />} />
+        <Route path="/brand/:id" element={<BrandPage />} />
         <Route path="/deals" element={<DealsPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
