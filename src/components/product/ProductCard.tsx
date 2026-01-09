@@ -9,8 +9,6 @@ interface ProductCardProps {
   product: Product;
 }
 
-const FALLBACK_IMAGE = 'https://via.placeholder.com/600x800?text=M%C9%99hsul';
-
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { t, currentLanguage } = useTranslation();
   const addItem = useCartStore((state) => state.addItem);
@@ -19,7 +17,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const firstVariant = product.variants?.[0];
   const volume = firstVariant ? firstVariant.volume : product.volume;
   const inWishlist = isInWishlist(product.id, volume);
-  const primaryImage = product.images?.[0] || FALLBACK_IMAGE;
+  const primaryImage = product.images?.[0];
 
   // Get translated content based on current language
   const productName = currentLanguage !== 'az' && product.translations?.[currentLanguage]?.name 
@@ -80,19 +78,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="bg-white rounded-[2rem] p-3 shadow-soft hover:shadow-card transition-all duration-500 hover:-translate-y-2 relative">
         {/* Image Container */}
         <div className="relative overflow-hidden rounded-[1.5rem] aspect-[4/5] bg-gray-100">
-          <img
-            src={primaryImage}
-            alt={productName}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-            onError={(event) => {
-              const target = event.target as HTMLImageElement;
-              if (target.dataset.fallbackApplied) {
-                return;
-              }
-              target.dataset.fallbackApplied = 'true';
-              target.src = FALLBACK_IMAGE;
-            }}
-          />
+          {primaryImage && (
+            <img
+              src={primaryImage}
+              alt={productName}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            />
+          )}
           
           {/* Overlay Gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

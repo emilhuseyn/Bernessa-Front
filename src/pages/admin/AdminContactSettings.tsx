@@ -235,7 +235,10 @@ export default function AdminContactSettings() {
       workingHoursSundayRu: ruTranslation?.workingHoursSunday || '',
     });
     if (setting.contactImage) {
-      setImagePreview(`${API_BASE_URL.replace('/api', '')}${setting.contactImage}`);
+      const mediaBaseUrl = API_BASE_URL.replace(/\/?api\/?$/, '');
+      setImagePreview(`${mediaBaseUrl}${setting.contactImage}`);
+    } else {
+      setImagePreview(null);
     }
     setShowModal(true);
   };
@@ -299,8 +302,9 @@ export default function AdminContactSettings() {
 
   return (
     <AdminLayout>
-      {/* Page Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div>
+        {/* Page Header */}
+        <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Əlaqə Parametrləri</h1>
           <p className="text-gray-600 dark:text-gray-400">Əlaqə məlumatlarını idarə edin</p>
@@ -331,98 +335,161 @@ export default function AdminContactSettings() {
               key={setting.id}
               className="bg-white dark:bg-slate-800 rounded-3xl shadow-lg shadow-gray-200/50 dark:shadow-slate-900/50 border border-gray-100 dark:border-slate-700 p-6"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-start gap-4 flex-1">
-                  {setting.contactImage && (
+              {/* Grid Layout: Image on Left, Info on Right */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Image Section */}
+                {setting.contactImage && (
+                  <div className="lg:col-span-1">
                     <img
-                      src={`${API_BASE_URL.replace('/api', '')}${setting.contactImage}`}
+                      src={`${API_BASE_URL.replace(/\/?api\/?$/, '')}${setting.contactImage}`}
                       alt="Contact"
-                      className="w-20 h-20 object-cover rounded-xl cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => setImageViewModal(`${API_BASE_URL.replace('/api', '')}${setting.contactImage}`)}
+                      className="w-full h-auto max-h-80 object-contain rounded-2xl cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => setImageViewModal(`${API_BASE_URL.replace(/\/?api\/?$/, '')}${setting.contactImage}`)}
+                      onError={(e) => {
+                        console.error('Image failed to load:', setting.contactImage);
+                        console.error('Full URL:', e.currentTarget.src);
+                        const target = e.currentTarget;
+                        target.parentElement!.innerHTML = '<div class="w-full h-64 bg-gray-200 dark:bg-slate-700 rounded-2xl flex items-center justify-center text-center p-4"><div><svg class="w-16 h-16 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg><p class="text-gray-500 text-sm">Şəkil yüklənmədi</p></div></div>';
+                      }}
                     />
+                  </div>
+                )}
+                
+                {/* Info Section */}
+                <div className={setting.contactImage ? "lg:col-span-2" : "lg:col-span-3"}>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                    📍 {setting.address}
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm mb-4">
+                    <div className="flex items-start gap-2">
+                      <span className="text-gray-500 dark:text-gray-400">📧</span>
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400 block text-xs">Email:</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{setting.email}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-gray-500 dark:text-gray-400">📞</span>
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400 block text-xs">Telefon:</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{setting.phone}</span>
+                      </div>
+                    </div>
+                    {setting.whatsApp && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-gray-500 dark:text-gray-400">💬</span>
+                        <div>
+                          <span className="text-gray-500 dark:text-gray-400 block text-xs">WhatsApp:</span>
+                          <span className="text-gray-900 dark:text-white font-medium">{setting.whatsApp}</span>
+                        </div>
+                      </div>
+                    )}
+                    {setting.instagram && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-gray-500 dark:text-gray-400">📸</span>
+                        <div>
+                          <span className="text-gray-500 dark:text-gray-400 block text-xs">Instagram:</span>
+                          <span className="text-gray-900 dark:text-white font-medium">{setting.instagram}</span>
+                        </div>
+                      </div>
+                    )}
+                    {setting.latitude && setting.longitude && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-gray-500 dark:text-gray-400">🗺️</span>
+                        <div>
+                          <span className="text-gray-500 dark:text-gray-400 block text-xs">Koordinatlar:</span>
+                          <span className="text-gray-900 dark:text-white font-medium text-xs">{setting.latitude}, {setting.longitude}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Working Hours */}
+                  {(setting.workingHoursWeekdays || setting.workingHoursSaturday || setting.workingHoursSunday) && (
+                    <div className="bg-gray-50 dark:bg-slate-700/30 rounded-xl p-4 mb-4">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">⏰ İş Saatları</h4>
+                      <div className="grid grid-cols-3 gap-3 text-sm">
+                        {setting.workingHoursWeekdays && (
+                          <div>
+                            <span className="text-gray-500 dark:text-gray-400 block text-xs mb-1">Həftə içi:</span>
+                            <span className="text-gray-900 dark:text-white font-medium">{setting.workingHoursWeekdays}</span>
+                          </div>
+                        )}
+                        {setting.workingHoursSaturday && (
+                          <div>
+                            <span className="text-gray-500 dark:text-gray-400 block text-xs mb-1">Şənbə:</span>
+                            <span className="text-gray-900 dark:text-white font-medium">{setting.workingHoursSaturday}</span>
+                          </div>
+                        )}
+                        {setting.workingHoursSunday && (
+                          <div>
+                            <span className="text-gray-500 dark:text-gray-400 block text-xs mb-1">Bazar:</span>
+                            <span className="text-gray-900 dark:text-white font-medium">{setting.workingHoursSunday}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      {setting.address}
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-500 dark:text-gray-400">Email:</span>
-                        <span className="ml-2 text-gray-900 dark:text-white">{setting.email}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500 dark:text-gray-400">Telefon:</span>
-                        <span className="ml-2 text-gray-900 dark:text-white">{setting.phone}</span>
-                      </div>
-                      {setting.whatsApp && (
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">WhatsApp:</span>
-                          <span className="ml-2 text-gray-900 dark:text-white">{setting.whatsApp}</span>
-                        </div>
+
+                  {/* Support Description */}
+                  {setting.supportDescription && (
+                    <div className="bg-primary-50 dark:bg-primary-900/20 rounded-xl p-4">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">💬 Dəstək Məlumatı</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{setting.supportDescription}</p>
+                    </div>
+                  )}
+
+                  {/* Social Media Links */}
+                  {(setting.facebookUrl || setting.twitterUrl || setting.linkedInUrl || setting.youTubeUrl) && (
+                    <div className="mt-4 flex gap-2">
+                      {setting.facebookUrl && (
+                        <a href={setting.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors" title="Facebook">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        </a>
                       )}
-                      {setting.instagram && (
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">Instagram:</span>
-                          <span className="ml-2 text-gray-900 dark:text-white">{setting.instagram}</span>
-                        </div>
+                      {setting.twitterUrl && (
+                        <a href={setting.twitterUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-sky-50 dark:bg-sky-900/20 text-sky-600 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors" title="Twitter">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+                        </a>
+                      )}
+                      {setting.linkedInUrl && (
+                        <a href={setting.linkedInUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors" title="LinkedIn">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                        </a>
+                      )}
+                      {setting.youTubeUrl && (
+                        <a href={setting.youTubeUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors" title="YouTube">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        </a>
                       )}
                     </div>
+                  )}
+                  <div className="flex gap-2 mt-4 lg:mt-0">
+                    <button
+                      onClick={() => handleEdit(setting)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      title="Redaktə et"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(setting.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      title="Sil"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEdit(setting)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                    title="Redaktə et"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(setting.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    title="Sil"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              {/* Additional Info */}
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  {setting.workingHoursWeekdays && (
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400 block">Həftə içi:</span>
-                      <span className="text-gray-900 dark:text-white">{setting.workingHoursWeekdays}</span>
-                    </div>
-                  )}
-                  {setting.workingHoursSaturday && (
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400 block">Şənbə:</span>
-                      <span className="text-gray-900 dark:text-white">{setting.workingHoursSaturday}</span>
-                    </div>
-                  )}
-                  {setting.workingHoursSunday && (
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400 block">Bazar:</span>
-                      <span className="text-gray-900 dark:text-white">{setting.workingHoursSunday}</span>
-                    </div>
-                  )}
-                </div>
-                {setting.supportDescription && (
-                  <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">{setting.supportDescription}</p>
-                )}
               </div>
             </div>
           ))
         )}
       </div>
-
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -862,6 +929,7 @@ export default function AdminContactSettings() {
           </div>
         </div>
       )}
+      </div>
     </AdminLayout>
   );
 }

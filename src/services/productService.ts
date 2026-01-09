@@ -45,7 +45,6 @@ export interface ProductFilterParams {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5034/api';
 const MEDIA_BASE_URL = API_BASE_URL.replace(/\/?api\/?$/, '');
-const FALLBACK_IMAGE = 'https://via.placeholder.com/600x800?text=M%C9%99hsul';
 const PRODUCT_ENDPOINT_CANDIDATES = ['/productses', '/Productses', '/products', '/Products'];
 
 const sanitizeRelativePath = (value: string): string => {
@@ -67,11 +66,11 @@ const extractMediaPath = (value: unknown): string | null => {
 };
 
 const resolveMediaUrl = (path: string): string => {
-  if (!path) return FALLBACK_IMAGE;
+  if (!path) return '';
   if (/^https?:\/\//i.test(path)) return path;
   const normalized = sanitizeRelativePath(path);
   if (!normalized) {
-    return FALLBACK_IMAGE;
+    return '';
   }
   return `${MEDIA_BASE_URL}/${normalized}`;
 };
@@ -92,7 +91,7 @@ const normalizeProduct = (raw: any): Product => {
       name: '',
       description: '',
       price: 0,
-      images: [FALLBACK_IMAGE],
+      images: [],
       category: '',
     };
   }
@@ -126,8 +125,8 @@ const normalizeProduct = (raw: any): Product => {
   }
 
   const resolvedImages = rawImages.length
-    ? rawImages.map((img) => resolveMediaUrl(img))
-    : [FALLBACK_IMAGE];
+    ? rawImages.map((img) => resolveMediaUrl(img)).filter(Boolean)
+    : [];
   const originalPriceValue = raw.originalPrice != null ? Number(raw.originalPrice) : undefined;
   const rawCategoryId = coalesceValue(
     raw.categoryId,

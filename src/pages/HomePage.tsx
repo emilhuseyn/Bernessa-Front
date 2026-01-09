@@ -20,10 +20,10 @@ export const HomePage: React.FC = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [brandsLoading, setBrandsLoading] = useState(true);
   const [contactSettings, setContactSettings] = useState<ContactSetting | null>(null);
+  const [heroImageLoading, setHeroImageLoading] = useState(true);
   const allProductsRef = useRef<Product[] | null>(null);
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5034/api';
   const mediaBaseUrl = apiBaseUrl.replace(/\/?api\/?$/, '');
-  const fallbackHeroImage = 'https://images.unsplash.com/photo-1541643600914-78b084683601?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
 
   const computeDiscount = (product: Product) => {
     if (!product.originalPrice || product.originalPrice <= product.price) {
@@ -54,6 +54,31 @@ export const HomePage: React.FC = () => {
       setFeaturedLoading(true);
       setBrandsLoading(true);
 
+      // Fetch hero image first and in parallel with other data
+      const heroImagePromise = (async () => {
+        try {
+          const contactData = await contactSettingService.getActiveContactSetting();
+          if (contactData) {
+            setContactSettings(contactData);
+            // Preload the image immediately
+            if (contactData.contactImage) {
+              const img = new Image();
+              img.src = `${mediaBaseUrl}${contactData.contactImage}`;
+              img.onload = () => setHeroImageLoading(false);
+              img.onerror = () => setHeroImageLoading(false);
+            } else {
+              setHeroImageLoading(false);
+            }
+          } else {
+            setHeroImageLoading(false);
+          }
+        } catch (error) {
+          console.error('Error fetching contact settings:', error);
+          setHeroImageLoading(false);
+        }
+      })();
+
+      // Fetch categories
       try {
         const categoriesData = await categoryService.getAll();
         setCategories(categoriesData);
@@ -109,15 +134,8 @@ export const HomePage: React.FC = () => {
         setBrandsLoading(false);
       }
 
-      // Fetch contact settings for hero image
-      try {
-        const contactData = await contactSettingService.getActiveContactSetting();
-        if (contactData) {
-          setContactSettings(contactData);
-        }
-      } catch (error) {
-        console.error('Error fetching contact settings:', error);
-      }
+      // Wait for hero image to be handled
+      await heroImagePromise;
     };
 
     fetchData();
@@ -177,11 +195,18 @@ export const HomePage: React.FC = () => {
 
               <div className="relative hidden lg:block">
                 <div className="relative z-10 animate-float">
-                  <img 
-                    src={contactSettings?.contactImage ? `${mediaBaseUrl}${contactSettings.contactImage}` : fallbackHeroImage}
-                    alt="Luxury Perfume" 
-                    className="rounded-[2.5rem] shadow-2xl w-full max-w-md mx-auto object-cover aspect-[3/4]"
-                  />
+                  {heroImageLoading ? (
+                    <div className="rounded-[2.5rem] shadow-2xl w-full max-w-md mx-auto aspect-[3/4] bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
+                  ) : contactSettings?.contactImage ? (
+                    <img 
+                      src={`${mediaBaseUrl}${contactSettings.contactImage}`}
+                      alt="Luxury Perfume" 
+                      className="rounded-[2.5rem] shadow-2xl w-full max-w-md mx-auto object-cover aspect-[3/4]"
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="async"
+                    />
+                  ) : null}
                   
                   {/* Floating Cards */}
                   <div className="absolute -left-12 top-1/4 bg-white p-4 rounded-2xl shadow-xl animate-float" style={{ animationDelay: '1s' }}>
@@ -282,14 +307,13 @@ export const HomePage: React.FC = () => {
                   className="group relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-1 cursor-pointer"
                 >
                   <div className="aspect-square w-full overflow-hidden bg-slate-50">
-                    <img
-                      src={`${mediaBaseUrl}/${brand.logo?.replace(/^\/+/, '')}`}
-                      alt={brand.name}
-                      className="h-full w-full object-contain p-4 transition-transform duration-300 group-hover:scale-110"
-                      onError={(e) => {
-                        e.currentTarget.src = 'https://via.placeholder.com/200x200?text=Logo';
-                      }}
-                    />
+                    {brand.logo && (
+                      <img
+                        src={`${mediaBaseUrl}/${brand.logo?.replace(/^\/+/, '')}`}
+                        alt={brand.name}
+                        className="h-full w-full object-contain p-4 transition-transform duration-300 group-hover:scale-110"
+                      />
+                    )}
                   </div>
                   <div className="p-2 md:p-3 text-center">
                     <h3 className="truncate text-xs md:text-sm font-semibold text-slate-900 dark:text-white">

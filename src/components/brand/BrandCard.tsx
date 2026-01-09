@@ -33,16 +33,6 @@ export const BrandCard: React.FC<BrandCardProps> = ({ brand }) => {
               src={logoSrc}
               alt={brand.name}
               className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 filter group-hover:brightness-110"
-              onError={(event) => {
-                const target = event.target as HTMLImageElement;
-                if (target.dataset.fallbackApplied) return;
-                target.dataset.fallbackApplied = 'true';
-                target.style.display = 'none';
-                const parent = target.parentElement;
-                if (parent) {
-                  parent.innerHTML = `<div class="text-4xl sm:text-5xl font-bold text-slate-300 dark:text-slate-600">${brand.name.charAt(0)}</div>`;
-                }
-              }}
             />
           ) : (
             <div className="text-4xl sm:text-5xl font-bold text-slate-300">{brand.name.charAt(0)}</div>

@@ -34,17 +34,13 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
       <div className="relative h-[300px] sm:h-[400px] lg:h-[500px] overflow-hidden rounded-2xl sm:rounded-[2rem] shadow-lg transition-all duration-500 hover:shadow-2xl hover:shadow-primary-500/20">
         {/* Image Background */}
         <div className="absolute inset-0 bg-gray-200">
-          <img
-            src={imageSrc || 'https://via.placeholder.com/400x500?text=' + encodeURIComponent(categoryName)}
-            alt={categoryName}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            onError={(event) => {
-              const target = event.target as HTMLImageElement;
-              if (target.dataset.fallbackApplied) return;
-              target.dataset.fallbackApplied = 'true';
-              target.src = 'https://via.placeholder.com/400x500?text=' + encodeURIComponent(categoryName);
-            }}
-          />
+          {imageSrc && (
+            <img
+              src={imageSrc}
+              alt={categoryName}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
         </div>
 
