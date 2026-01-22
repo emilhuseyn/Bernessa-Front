@@ -42,14 +42,14 @@ export const Header: React.FC = () => {
         }}
       ></div>
       <div className="container-custom relative">
-        <div className="flex items-center justify-between h-14 gap-2 md:gap-4">
+        <div className="flex items-center justify-between h-14 gap-1 sm:gap-2 md:gap-4">
           {/* Actions Left */}
-          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+          <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2">
             <LanguageSwitcher />
           </div>
 
           {/* Logo Center */}
-          <Link to="/" className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2 group flex-shrink-0">
+          <Link to="/" className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2 group flex-shrink-0 pointer-events-auto">
             {/* <img 
               src="/image.png" 
               alt="Barsense Logo" 
@@ -63,15 +63,15 @@ export const Header: React.FC = () => {
           </Link>
 
           {/* Actions Right */}
-          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+          <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2">
             <button
               type="button"
               onClick={handleSearchClick}
-              className="p-2 sm:p-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group"
+              className="p-1.5 sm:p-2 md:p-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group"
               aria-label="Axtarış səhifəsinə keç"
             >
               <svg
-                className="w-6 h-6 transform group-hover:scale-110 transition-transform"
+                className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 transform group-hover:scale-110 transition-transform"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -80,8 +80,8 @@ export const Header: React.FC = () => {
               </svg>
             </button>
             {/* Wishlist */}
-            <Link to="/wishlist" className="relative p-2 sm:p-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <Link to="/wishlist" className="relative p-1.5 sm:p-2 md:p-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group">
+              <svg className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -97,8 +97,8 @@ export const Header: React.FC = () => {
             </Link>
 
             {/* Cart */}
-            <Link to="/cart" className="relative p-2 sm:p-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <Link to="/cart" className="relative p-1.5 sm:p-2 md:p-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group">
+              <svg className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

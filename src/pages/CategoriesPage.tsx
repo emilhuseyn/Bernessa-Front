@@ -129,7 +129,7 @@ export const CategoriesPage: React.FC = () => {
                     {categories.length} {t('categories.count')}
                   </div>
                    
-                  <a href="#categories-grid" className="inline-flex items-center gap-2 rounded-full bg-white text-gray-900 px-5 py-2 font-medium shadow-lg hover:shadow-xl transition-transform hover:-translate-y-0.5">
+                  <a href="#categories-grid" className="inline-flex items-center gap-2 rounded-full bg-black text-white px-5 py-2 font-medium shadow-lg hover:shadow-xl transition-transform hover:-translate-y-0.5">
                     {t('categories.viewAll')}
                     <span aria-hidden="true">→</span>
                   </a>

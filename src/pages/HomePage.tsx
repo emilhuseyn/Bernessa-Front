@@ -243,7 +243,7 @@ export const HomePage: React.FC = () => {
               <h2 className="text-3xl font-bold text-gray-900">{t('home.categories.title')}</h2>
               <p className="text-gray-600 mt-2">{t('home.categories.subtitle')}</p>
             </div>
-            <Link to="/categories" className="text-primary-600 font-medium hover:text-primary-700">
+            <Link to="/categories" className="text-black font-medium hover:text-gray-700">
               {t('home.featured.viewAll')} →
             </Link>
           </div>
@@ -274,7 +274,7 @@ export const HomePage: React.FC = () => {
             </div>
             <Link
               to="/brands"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-semibold flex items-center gap-2 group"
+              className="text-black hover:text-gray-700 dark:text-primary-400 dark:hover:text-primary-300 font-semibold flex items-center gap-2 group"
             >
               {t('home.brands.viewAll')}
               <svg
@@ -331,7 +331,7 @@ export const HomePage: React.FC = () => {
               <h2 className="text-3xl font-bold text-gray-900">{t('home.featured.title')}</h2>
               <p className="text-gray-600 mt-2">{t('home.featured.subtitle')}</p>
             </div>
-            <Link to="/search" className="text-primary-600 font-medium hover:text-primary-700">
+            <Link to="/search" className="text-black font-medium hover:text-gray-700">
               {t('home.featured.viewAll')} →
             </Link>
           </div>
@@ -367,8 +367,8 @@ export const HomePage: React.FC = () => {
           <div className="container-custom py-16">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center group">
-                <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <svg className="w-10 h-10 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                   </svg>
                 </div>
@@ -377,8 +377,8 @@ export const HomePage: React.FC = () => {
               </div>
 
               <div className="text-center group">
-                <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 </div>
@@ -387,8 +387,8 @@ export const HomePage: React.FC = () => {
               </div>
 
               <div className="text-center group">
-                <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                   </svg>
                 </div>

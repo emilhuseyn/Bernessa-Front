@@ -82,35 +82,35 @@ export const LanguageSwitcher = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-white/10 transition-colors"
         aria-label="Change language"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
         <FlagIcon code={currentLang.code} />
-        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+        <span className="text-sm font-semibold text-white">
           {currentLang.code.toUpperCase()}
         </span>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+        <div className="absolute left-0 mt-2 w-48 rounded-xl bg-gray-900 shadow-lg border border-gray-700 py-2 z-50">
           {languages.map((lang) => (
             <button
               key={lang.code}
               onClick={() => handleLanguageChange(lang.code)}
               className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors ${
                 currentLanguage === lang.code
-                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                  ? 'bg-gray-800 text-white'
+                  : 'text-gray-300 hover:bg-gray-800/50'
               }`}
             >
               <span className="flex items-center gap-2">
                 <FlagIcon code={lang.code} />
-                <span className="font-medium">{lang.code.toUpperCase()}</span>
+                <span className="font-medium text-white">{lang.code.toUpperCase()}</span>
               </span>
               {currentLanguage === lang.code && (
-                <FiCheck className="w-4 h-4 text-gray-900 dark:text-white" />
+                <FiCheck className="w-4 h-4 text-white" />
               )}
             </button>
           ))}
