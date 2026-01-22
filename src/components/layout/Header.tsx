@@ -45,6 +45,7 @@ export const Header: React.FC = () => {
         <div className="flex items-center justify-between h-14 gap-2 md:gap-4">
           {/* Actions Left */}
           <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+            <LanguageSwitcher />
           </div>
 
           {/* Logo Center */}
@@ -63,7 +64,6 @@ export const Header: React.FC = () => {
 
           {/* Actions Right */}
           <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-            <LanguageSwitcher />
             <button
               type="button"
               onClick={handleSearchClick}
