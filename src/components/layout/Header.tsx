@@ -38,29 +38,32 @@ export const Header: React.FC = () => {
             : 'backdrop-blur-sm border-b border-transparent'
         }`}
         style={{ 
-          backgroundColor: '#111827'
+          backgroundColor: '#000000'
         }}
       ></div>
       <div className="container-custom relative">
-        <div className="flex items-center h-14 gap-2 md:gap-4">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
-            <img 
+        <div className="flex items-center justify-between h-14 gap-2 md:gap-4">
+          {/* Actions Left */}
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+          </div>
+
+          {/* Logo Center */}
+          <Link to="/" className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2 group flex-shrink-0">
+            {/* <img 
               src="/image.png" 
               alt="Barsense Logo" 
               className="w-8 h-8 sm:w-10 sm:h-10 object-contain group-hover:scale-110 transition-transform"
               style={{ filter: 'brightness(0) invert(1)' }}
-            />
+            /> */}
             <div className="flex flex-col">
-              <span className="text-lg sm:text-[1.6rem] font-bold text-white tracking-tight leading-none group-hover:text-primary-400 transition-colors" style={{ fontFamily: 'Deca Serif, serif' }}>BARSENSE</span>
+              <span className="text-lg sm:text-[1.6rem] text-white leading-none group-hover:text-primary-400 transition-colors" style={{ fontFamily: 'Organetto, sans-serif', letterSpacing: '0.05em' }}>BARSENSE</span>
               <span className="text-[8px] sm:text-[10px] text-gray-400 tracking-widest uppercase font-medium hidden xs:block">Luxury Perfumes</span>
             </div>
           </Link>
 
-          {/* Actions */}
-          <div className="ml-auto flex items-center gap-1 sm:gap-2 md:gap-3">
+          {/* Actions Right */}
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
             <LanguageSwitcher />
-            
             <button
               type="button"
               onClick={handleSearchClick}

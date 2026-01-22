@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Organetto';
+  src: url('/Demo_Fonts/Fontspring-DEMO-organetto-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
 @layer base {
   body {
     @apply bg-gray-50 text-gray-900 antialiased font-sans selection:bg-primary-500 selection:text-white;

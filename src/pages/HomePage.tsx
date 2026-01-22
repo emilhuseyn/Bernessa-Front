@@ -146,15 +146,13 @@ export const HomePage: React.FC = () => {
     <Layout>
       <PageTransition>
         {/* Hero Banner */}
-        <section className="relative min-h-[600px] flex items-center overflow-hidden pt-24">
+        <section className="relative h-[600px] flex items-center justify-center overflow-hidden pt-16">
           {/* Background Elements */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-secondary-50">
-            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary-200/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 animate-pulse"></div>
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary-200/40 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3"></div>
+          <div className="absolute inset-0 bg-white">
           </div>
 
-          <div className="container-custom relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="w-full h-full relative">
+            {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div className="space-y-8 animate-slide-up">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100">
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
@@ -191,17 +189,17 @@ export const HomePage: React.FC = () => {
                     <p className="text-sm text-gray-500">{t('home.stats.products')}</p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
-              <div className="relative hidden lg:block">
-                <div className="relative z-10 animate-float">
+              {/* <div className="relative hidden lg:block"> */}
+                <div className="w-full h-full">
                   {heroImageLoading ? (
-                    <div className="rounded-[2.5rem] shadow-2xl w-full max-w-md mx-auto aspect-[3/4] bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
+                    <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
                   ) : contactSettings?.contactImage ? (
                     <img 
                       src={`${mediaBaseUrl}${contactSettings.contactImage}`}
                       alt="Luxury Perfume" 
-                      className="rounded-[2.5rem] shadow-2xl w-full max-w-md mx-auto object-cover aspect-[3/4]"
+                      className="w-full h-full object-cover"
                       loading="eager"
                       fetchPriority="high"
                       decoding="async"
@@ -209,7 +207,7 @@ export const HomePage: React.FC = () => {
                   ) : null}
                   
                   {/* Floating Cards */}
-                  <div className="absolute -left-12 top-1/4 bg-white p-4 rounded-2xl shadow-xl animate-float" style={{ animationDelay: '1s' }}>
+                  {/* <div className="absolute -left-12 top-1/4 bg-white p-4 rounded-2xl shadow-xl animate-float" style={{ animationDelay: '1s' }}>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -231,14 +229,10 @@ export const HomePage: React.FC = () => {
                         <p className="text-xs text-gray-500">{t('home.floatingCard.over50')}</p>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
-                
-                {/* Decorative Elements */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] border border-gray-200 rounded-full opacity-50 animate-spin-slow"></div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] border border-gray-100 rounded-full opacity-30 animate-spin-slow" style={{ animationDirection: 'reverse' }}></div>
-              </div>
-            </div>
+              {/* </div> */}
+            {/* </div> */}
           </div>
         </section>
 

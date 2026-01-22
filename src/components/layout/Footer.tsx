@@ -29,7 +29,7 @@ export const Footer: React.FC = () => {
   const phone = contactSettings?.phone || '+994 50 123 45 67';
   
   return (
-    <footer className="relative mt-24 bg-gray-900 overflow-hidden">
+    <footer className="relative mt-24 bg-black overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-50"></div>
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary-900/20 rounded-full blur-3xl"></div>
