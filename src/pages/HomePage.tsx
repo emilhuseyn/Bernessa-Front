@@ -274,7 +274,7 @@ export const HomePage: React.FC = () => {
             </div>
             <Link
               to="/brands"
-              className="text-black hover:text-gray-700 dark:text-primary-400 dark:hover:text-primary-300 font-semibold flex items-center gap-2 group"
+              className="text-black hover:text-gray-700 font-semibold flex items-center gap-2 group"
             >
               {t('home.brands.viewAll')}
               <svg
