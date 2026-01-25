@@ -36,13 +36,15 @@ export const Footer: React.FC = () => {
           <div className="lg:col-span-5 space-y-8">
             <div>
               <div className="flex items-center space-x-3 mb-6">
-                <img 
+                {/* <img 
                   src="/image.png" 
                   alt="Barsense Logo" 
                   className="w-12 h-12 object-contain"
                   style={{ filter: 'brightness(0) invert(1)' }}
-                />
-                <span className="text-2xl font-display font-bold text-white tracking-tight">Barsense</span>
+                /> */}
+                <div className="flex flex-col">
+                  <span className="text-2xl text-white leading-none" style={{ fontFamily: 'Organetto, sans-serif', letterSpacing: '0.05em' }}>BARSENSE</span>
+                </div>
               </div>
               <p className="text-gray-400 leading-relaxed max-w-md">
                 {t('footer.description')}

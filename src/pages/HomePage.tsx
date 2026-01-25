@@ -269,22 +269,14 @@ export const HomePage: React.FC = () => {
         <section className="container-custom py-16">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t('home.brands.title')}</h2>
-              <p className="text-gray-600 dark:text-slate-400 mt-2">{t('home.brands.subtitle')}</p>
+              <h2 className="text-3xl font-bold text-gray-900">{t('home.brands.title')}</h2>
+              <p className="text-gray-600 mt-2">{t('home.brands.subtitle')}</p>
             </div>
             <Link
               to="/brands"
-              className="text-black hover:text-gray-700 font-semibold flex items-center gap-2 group"
+              className="text-black font-medium hover:text-gray-700"
             >
-              {t('home.brands.viewAll')}
-              <svg
-                className="w-5 h-5 transition-transform group-hover:translate-x-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              {t('home.brands.viewAll')} →
             </Link>
           </div>
 
