@@ -7,7 +7,6 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { productService } from '../services';
 import { handleApiError } from '../utils/errorHandler';
 import type { Product } from '../types';
-import { products as mockProducts } from '../data/mockData';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const SearchPage: React.FC = () => {
@@ -53,14 +52,8 @@ export const SearchPage: React.FC = () => {
 
         if (trimmedQuery) {
           data = await productService.search(trimmedQuery);
-          if (!data.length) {
-            data = filterLocalProducts(mockProducts, trimmedQuery);
-          }
         } else {
           data = await productService.getAll();
-          if (!data.length) {
-            data = mockProducts;
-          }
         }
 
         if (!ignore) {
@@ -70,10 +63,7 @@ export const SearchPage: React.FC = () => {
         if (!ignore) {
           const message = handleApiError(err);
           setError(message);
-          const fallback = query.trim()
-            ? filterLocalProducts(mockProducts, query)
-            : mockProducts;
-          setResults(fallback);
+          setResults([]);
         }
       } finally {
         if (!ignore) {

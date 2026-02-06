@@ -368,7 +368,7 @@ export const ProductPage: React.FC = () => {
                     {product.variants && product.variants.length > 0 && (
                       <div>
                         <label className="block text-xs sm:text-sm font-bold text-gray-900 mb-3 sm:mb-4 uppercase tracking-wider">
-                          Həcm
+                          {t('category.volume')}
                         </label>
                         <div className="flex flex-wrap gap-3">
                           {product.variants.map((variant, index) => (
