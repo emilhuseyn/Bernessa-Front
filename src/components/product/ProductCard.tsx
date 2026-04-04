@@ -107,18 +107,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
 
         {/* Content */}
-        <div className="pt-4 px-2 pb-2">
+        <div className="pt-4 px-2 pb-2 flex flex-col justify-between h-[130px] sm:h-[140px]">
           <div className="mb-2">
-            <p className="text-xs font-medium text-primary-600 mb-1 uppercase tracking-wider truncate">{product.brand || product.category}</p>
-            <h3 className="font-display font-bold text-gray-900 text-lg leading-tight group-hover:text-primary-600 transition-colors">
+            <div className="flex justify-between items-center mb-1 gap-2">
+              <p className="text-xs font-medium text-primary-600 uppercase tracking-wider truncate">{product.brand || product.category}</p>
+              {product.volume && (
+                <p className="text-[10px] sm:text-xs text-gray-600 whitespace-nowrap bg-gray-100 px-2 py-0.5 rounded-full font-medium">{product.volume}</p>
+              )}
+            </div>
+            <h3 className="font-display font-bold text-gray-900 text-[15px] sm:text-base leading-snug group-hover:text-primary-600 transition-colors line-clamp-2" title={productName}>
               {productName}
             </h3>
-            {product.volume && (
-              <p className="text-xs text-gray-500 mt-1 truncate">{product.volume}</p>
-            )}
           </div>
           
-          <div className="flex flex-wrap items-baseline gap-2 mt-2">
+          <div className="flex flex-wrap items-baseline gap-2 mt-auto">
             {product.variants && product.variants.length > 0 ? (
               <>
                 <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
