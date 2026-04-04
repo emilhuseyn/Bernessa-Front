@@ -110,7 +110,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="pt-4 px-2 pb-2">
           <div className="mb-2">
             <p className="text-xs font-medium text-primary-600 mb-1 uppercase tracking-wider truncate">{product.brand || product.category}</p>
-            <h3 className="font-display font-bold text-gray-900 text-lg leading-tight group-hover:text-primary-600 transition-colors line-clamp-1">
+            <h3 className="font-display font-bold text-gray-900 text-lg leading-tight group-hover:text-primary-600 transition-colors">
               {productName}
             </h3>
             {product.volume && (
